@@ -34,3 +34,7 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+# Handoff archive — extracted into _handoff/
+circles-garage.zip
+circles-garage-handoff.zip

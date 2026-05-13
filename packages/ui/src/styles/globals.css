@@ -2,3 +2,53 @@
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
+
+/* ── palettes ──────────────────────────────────────────────────────
+   monochrome, paper-on-ink. Default is `bone`; switch via
+   [data-palette="…"] on <html>. Tokens are surfaced as Tailwind
+   theme colours below so utility classes like `bg-paper`, `text-ink`,
+   `border-hair`, `text-faint`, `bg-ghost` resolve correctly.            */
+
+:root,
+[data-palette="bone"] {
+  --ink: #14110d;
+  --paper: #f6f4ef;
+  --hair: rgba(20, 17, 13, 0.12);
+  --faint: rgba(20, 17, 13, 0.55);
+  --ghost: rgba(20, 17, 13, 0.06);
+}
+
+[data-palette="newsprint"] {
+  --ink: #0d0d0d;
+  --paper: #ecebe6;
+  --hair: rgba(0, 0, 0, 0.14);
+  --faint: rgba(0, 0, 0, 0.55);
+  --ghost: rgba(0, 0, 0, 0.06);
+}
+
+[data-palette="eucalyptus"] {
+  --ink: #0e1a14;
+  --paper: #eef0e9;
+  --hair: rgba(14, 26, 20, 0.14);
+  --faint: rgba(14, 26, 20, 0.5);
+  --ghost: rgba(14, 26, 20, 0.06);
+}
+
+[data-palette="inverse"] {
+  --ink: #f6f4ef;
+  --paper: #14110d;
+  --hair: rgba(246, 244, 239, 0.16);
+  --faint: rgba(246, 244, 239, 0.6);
+  --ghost: rgba(246, 244, 239, 0.08);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-hair: var(--hair);
+  --color-faint: var(--faint);
+  --color-ghost: var(--ghost);
+  --font-mono:
+    var(--font-mono), "JetBrains Mono", "IBM Plex Mono", ui-monospace, Menlo,
+    monospace;
+}

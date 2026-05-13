@@ -1,32 +1,30 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata } from "next";
+import { JetBrains_Mono } from "next/font/google";
 
-import "@workspace/ui/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import "@workspace/ui/globals.css";
 
-const fontSans = Geist({
+const fontMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-sans",
-})
-
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
+  weight: ["400", "700"],
   variable: "--font-mono",
-})
+});
+
+export const metadata: Metadata = {
+  title: "circles/garage — builder program",
+  description:
+    "circles/garage — builder program. Ship mini-apps on Circles. Get paid every Monday.",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
-    >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+    <html lang="en" suppressHydrationWarning className={fontMono.variable}>
+      <body className="bg-paper font-mono text-ink antialiased">
+        {children}
       </body>
     </html>
-  )
+  );
 }

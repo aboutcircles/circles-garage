@@ -1,5 +1,5 @@
 {
-  "name": "next-monorepo",
+  "name": "circles-garage",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -7,11 +7,14 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "check": "turbo typecheck lint",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "husky": "^9.1.7",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "turbo": "^2.8.17",

@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
     "@workspace/ui": "workspace:*",
     "next": "16.1.6",
     "react": "^19.2.4",

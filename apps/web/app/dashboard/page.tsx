@@ -51,8 +51,8 @@ export default function DashboardPage() {
             </Hero>
             <div className="flex gap-2">
               <Btn sm>edit profile</Btn>
-              <Btn sm primary>
-                + register mini-app
+              <Btn sm primary href="/register">
+                + submit mini-app
               </Btn>
             </div>
           </div>

@@ -1,27 +1,23 @@
 import { content } from "@/lib/content";
-import {
-  Btn,
-  Field,
-  Grid,
-  Hero,
-  Page,
-  Pane,
-  S,
-  SDot,
-  Section,
-} from "@workspace/ui/kit";
+import { Btn, Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
+import { SignupClient } from "./signup-client";
 
 export default function SignupPage() {
   const F = content.signup;
+  const requiredCount = F.sections.reduce(
+    (acc, s) => acc + s.fields.filter((f) => f.required).length,
+    0,
+  );
 
   return (
     <Page
       screen="02 Sign up"
+      scroll
       status={
         <>
           <S k="form" v="signup.txt" />
           <SDot />
-          <S k="required *" v="6 fields" />
+          <S k="required *" v={`${requiredCount} fields`} />
           <SDot />
           <S k="kyc" v="none" />
           <SDot />
@@ -31,41 +27,10 @@ export default function SignupPage() {
       breadcrumb="welcome / signup"
     >
       <Grid cols="2fr 1fr" gap={12} fill>
-        {/* form pane */}
         <Pane title="signup · builder" hint="who's shipping?">
-          <Hero
-            size="lg"
-            sub="Three minutes. No KYC. We need to know where to send prize money and where to look up your numbers."
-          >
-            who&apos;s shipping?
-          </Hero>
-
-          {F.sections.map((sec) => (
-            <Section
-              key={sec.num}
-              num={sec.num}
-              label={sec.label}
-              hint={sec.hint}
-            >
-              {sec.fields.map((f) => (
-                <Field key={f.label} {...f} />
-              ))}
-            </Section>
-          ))}
-
-          <div className="mt-7 border-t border-hair pt-[18px] font-mono text-xs leading-[1.55] text-faint">
-            [ ] {F.consent}
-          </div>
-          <div className="mt-4 flex items-center gap-2.5">
-            <Btn primary>sign &amp; create →</Btn>
-            <Btn>← back</Btn>
-            <span className="ml-auto font-mono text-[11px] text-faint">
-              step 1/1 · then → dashboard
-            </span>
-          </div>
+          <SignupClient form={F} />
         </Pane>
 
-        {/* sidebar */}
         <div
           className="grid min-h-0 gap-3"
           style={{ gridTemplateRows: "auto auto 1fr" }}

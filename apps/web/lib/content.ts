@@ -128,6 +128,7 @@ export type Me = {
 
 // ── sign-up form ───────────────────────────────────────────────────
 export type SignupField = {
+  name: string;
   label: string;
   required?: boolean;
   placeholder: string;
@@ -148,6 +149,8 @@ export type SignupNotice = {
 
 export type SignupForm = {
   sections: readonly SignupSection[];
+  steps: readonly string[];
+  submit: string;
   consent: string;
   benefits: readonly string[];
   benefitsMuted: readonly string[];
@@ -214,51 +217,55 @@ export type Content = {
 
 export const content: Content = {
   // ── program meta ────────────────────────────────────────────────
+  // Cycles are 7 days. Each cycle auto-snapshots Sunday 23:59 CET; prizes
+  // are paid the following Monday. The current cycle's countdown is in
+  // `snapshotIn`. (Static for now — wire to a server-computed value when
+  // we have a clock running.)
   program: {
     name: "circles/garage",
     domain: "builder.circles.garage",
-    cycle: 12,
-    pool: "€487.20", // weekly pool, in xDAI
+    cycle: 1,
+    pool: "€500.00", // weekly pool, in xDAI
     payoutDay: "Mon",
-    snapshotIn: "2d 14h 11m", // countdown to next snapshot
-    lastUpdated: "17 min ago",
-    nowCET: "17:42 CET",
+    snapshotIn: "3d 12h", // countdown to sun 17 may 23:59 CET
+    lastUpdated: "just now",
+    nowCET: "12:00 CET",
     // payout split (numerators sum to denominator)
     poolSplit: {
       winners: 2,
       life: 1,
       denom: 3,
-      winnersAmt: "€332.80",
-      lifeAmt: "€166.40",
+      winnersAmt: "€333.33",
+      lifeAmt: "€166.67",
     },
   },
 
   // ── live counters (landing hero) ───────────────────────────────
   counters: [
-    { k: "builders signed", v: "142", d: "+38 / wk" },
-    { k: "mini-apps live", v: "63", d: "of 89 submitted" },
-    { k: "new minters · 7d", v: "2,914", d: "↑ 3.1× wk-on-wk" },
-    { k: "weekly pool", v: "€487", d: "paid every mon" },
+    { k: "builders signed", v: "0", d: "open call · day 1" },
+    { k: "mini-apps submitted", v: "0", d: "register yours" },
+    { k: "auto-snapshot", v: "SUN 17", d: "3d 12h · 23:59 CET" },
+    { k: "weekly pool", v: "€500", d: "paid every mon" },
   ],
 
   // ── copy: landing ──────────────────────────────────────────────
   landing: {
-    kicker: "// builder program · open call · cycle 12 of 12",
+    kicker: "// builder program · cycle 01 · open call · live now",
     headline: ["Get paid to ship", "mini-apps on Circles."],
-    sub: "~€500 weekly pool, paid every Monday. ⅔ to the apps moving WAU. ⅓ to the apps that keep showing up. No decks, no rounds, no gatekeepers.",
-    ctaPrimary: "start submission →",
-    ctaSecondary: "read rules.md",
+    sub: "Cycle 01 is open. 7-day cycles · auto-snapshot every Sunday 23:59 CET · €500 weekly pool paid Monday morning. ⅔ to the apps moving WAU. ⅓ to the apps that keep showing up. No decks, no rounds, no gatekeepers.",
+    ctaPrimary: "sign up →",
+    ctaSecondary: "submit a mini-app →",
     steps: [
       ["i.", "sign up", "handle · org · contact. 3 fields, no kyc."],
       [
         "ii.",
-        "register a mini-app",
+        "submit a mini-app",
         "contracts · repo · live link. we wire up the meter.",
       ],
       [
         "iii.",
         "get measured. get paid.",
-        "every monday. ⅔ to top movers, ⅓ to apps still moving.",
+        "auto-snapshot sun 23:59 CET. ⅔ to top movers, ⅓ to apps still moving. paid mon.",
       ],
     ],
     manifesto: [
@@ -268,174 +275,27 @@ export const content: Content = {
       "~ writing in public, paid in private.",
     ],
     bulletin: [
-      "cycle 12 pool funded.",
-      "new metric available: re-activations.",
-      "wed call topic: how the meter works.",
+      "cycle 01 open call · live now.",
+      "auto-snapshot every sun 23:59 CET · prizes paid mon morning.",
+      "wed call topic: how the meter works (open to all).",
     ],
   },
 
   // ── copy: schedule ─────────────────────────────────────────────
   schedule: [
-    { d: "MON 12", body: "snapshot · prizes paid" },
-    { d: "WED 14", body: "builder call · 18:00 CET", now: true },
-    { d: "FRI 16", body: "last day to register" },
-    { d: "MON 19", body: "next snapshot" },
+    { d: "THU 14", body: "cycle 01 open call · live", now: true },
+    { d: "SUN 17", body: "cycle 01 auto-snapshot · 23:59 CET" },
+    { d: "MON 18", body: "first prizes paid · cycle 02 starts" },
+    { d: "WED 20", body: "builder call · 18:00 CET" },
   ],
 
   // ── leaderboard rows ───────────────────────────────────────────
-  // numbers are mocks; structure is what the API should return.
-  leaderboard: [
-    {
-      rank: 1,
-      builder: "splits.eth",
-      org: "pocket-collective",
-      app: "dropparty",
-      pitch: "split a tab, mint to non-holders",
-      mints: "+412",
-      vol: "€11.0k",
-      payout: "€124.30",
-      streak: "6w",
-      star: true,
-    },
-    {
-      rank: 2,
-      builder: "manyfold",
-      org: "manyfold-labs",
-      app: "pocket-mint",
-      pitch: "NFC tap-to-mint stickers",
-      mints: "+298",
-      vol: "€2.1k",
-      payout: "€89.40",
-      streak: "3w",
-    },
-    {
-      rank: 3,
-      builder: "haylee.crc",
-      org: "café-tab",
-      app: "café-tab",
-      pitch: "café tabs paid in CRC",
-      mints: "+187",
-      vol: "€840",
-      payout: "€56.10",
-      streak: "11w",
-      star: true,
-    },
-    {
-      rank: 4,
-      builder: "ofgr.eth",
-      org: "ofgr-ofgr",
-      app: "re/circle",
-      pitch: "weekly recap of your circle",
-      mints: "+142",
-      vol: "€420",
-      payout: "€42.60",
-      streak: "1w",
-    },
-    {
-      rank: 5,
-      builder: "0xcap.eth",
-      org: "bzzar-collective",
-      app: "bzzar",
-      pitch: "p2p marketplace for IRL stuff",
-      mints: "+97",
-      vol: "€1.2k",
-      payout: "€29.10",
-      streak: "—",
-    },
-    {
-      rank: 6,
-      builder: "minae",
-      org: "sourdough",
-      app: "crumb",
-      pitch: "group orders for local bakeries",
-      mints: "+74",
-      vol: "€620",
-      payout: "€22.20",
-      streak: "4w",
-    },
-    {
-      rank: 7,
-      builder: "rxiv",
-      org: "rxiv-rxiv",
-      app: "tonight",
-      pitch: "pop-up event tickets",
-      mints: "+58",
-      vol: "€310",
-      payout: "€17.40",
-      streak: "2w",
-    },
-    {
-      rank: 8,
-      builder: "noxe",
-      org: "noxe-eth",
-      app: "splitsie",
-      pitch: "flatmate bill splits",
-      mints: "+47",
-      vol: "€150",
-      payout: "€14.10",
-      streak: "7w",
-      star: true,
-    },
-    {
-      rank: 9,
-      builder: "p.sundae",
-      org: "sundae-coop",
-      app: "cone",
-      pitch: "ice cream stamp card",
-      mints: "+31",
-      vol: "€90",
-      payout: "€9.30",
-      streak: "—",
-      muted: true,
-    },
-    {
-      rank: 10,
-      builder: "kab.eth",
-      org: "kab-studio",
-      app: "thread",
-      pitch: "invite-only msg threads",
-      mints: "+24",
-      vol: "€60",
-      payout: "€7.20",
-      streak: "1w",
-    },
-    {
-      rank: 11,
-      builder: "oyl",
-      org: "oyl-house",
-      app: "tab",
-      pitch: "rolling open tab w/ friends",
-      mints: "+18",
-      vol: "€40",
-      payout: "€5.40",
-      streak: "—",
-      muted: true,
-    },
-    {
-      rank: 12,
-      builder: "wenmoon.crc",
-      org: "wenmoon",
-      app: "whenwen",
-      pitch: "when2meet but on-chain",
-      mints: "+12",
-      vol: "€20",
-      payout: "€3.60",
-      streak: "—",
-      muted: true,
-    },
-  ],
+  // cycle 01 has just opened — no entries yet.
+  leaderboard: [],
 
   // ── leaderboard secondary panels ───────────────────────────────
-  circleOfLife: [
-    { builder: "haylee.crc", weeks: 11, bonus: "€56.10" },
-    { builder: "noxe", weeks: 7, bonus: "€21.20" },
-    { builder: "splits.eth", weeks: 6, bonus: "€18.40" },
-  ],
-  movers: [
-    { builder: "splits.eth", from: 7, to: 1, dir: "up" },
-    { builder: "minae", from: 14, to: 6, dir: "up" },
-    { builder: "0xcap", from: 2, to: 5, dir: "down" },
-  ],
+  circleOfLife: [],
+  movers: [],
 
   // ── logged-in user (dashboard / register screens) ──────────────
   me: {
@@ -499,13 +359,20 @@ export const content: Content = {
         label: "you",
         hint: "3 fields, all required",
         fields: [
-          { label: "handle", required: true, placeholder: "splits.eth" },
           {
+            name: "handle",
+            label: "handle",
+            required: true,
+            placeholder: "splits.eth",
+          },
+          {
+            name: "reach",
             label: "reach",
             required: true,
             placeholder: "telegram / farcaster / email",
           },
           {
+            name: "circles_addr",
             label: "circles addr (v2)",
             required: true,
             placeholder: "0x____________________________________",
@@ -519,11 +386,13 @@ export const content: Content = {
         hint: "org you submit under",
         fields: [
           {
+            name: "org_addr",
             label: "circles org address",
             required: true,
             placeholder: "0x____________________________________",
           },
           {
+            name: "team",
             label: "team members",
             placeholder: "0x…, 0x…, 0x…",
             hint: "comma-separated CRC addresses",
@@ -535,18 +404,27 @@ export const content: Content = {
         label: "the app · light touch",
         hint: "you can add the rest later",
         fields: [
-          { label: "working name", required: true, placeholder: "pocket-mint" },
           {
+            name: "app_name",
+            label: "working name",
+            required: true,
+            placeholder: "pocket-mint",
+          },
+          {
+            name: "track",
             label: "track",
             placeholder: "payments | social | games | tools | other",
           },
           {
+            name: "pitch",
             label: "one-line pitch",
             placeholder: "what does it do in one breath",
           },
         ],
       },
     ],
+    steps: ["you", "circle", "app", "review"],
+    submit: "sign & create →",
     consent:
       "I read the rules. The weekly snapshot is final. My handle & numbers can show on the public leaderboard.",
     benefits: [

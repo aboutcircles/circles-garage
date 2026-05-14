@@ -269,7 +269,7 @@ export const content: Content = {
       ],
     ],
     manifesto: [
-      "Circles is a protocol for stable, social money. Mini-apps are how that becomes a daily habit instead of a thesis.",
+      "Circles is money, reimagined. Mini-apps are how it becomes a daily habit instead of a thesis.",
       "We pay the people building the habit-forming surfaces — not the ones with the best pitch.",
       "The metric is whatever moves weekly active users on chain. We publish the formula. You optimise for it. We pay the winners.",
       "~ writing in public, paid in private.",

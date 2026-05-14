@@ -16,6 +16,7 @@
   --hair: rgba(20, 17, 13, 0.12);
   --faint: rgba(20, 17, 13, 0.55);
   --ghost: rgba(20, 17, 13, 0.06);
+  --ember: #ff491b;
 }
 
 [data-palette="newsprint"] {
@@ -24,6 +25,7 @@
   --hair: rgba(0, 0, 0, 0.14);
   --faint: rgba(0, 0, 0, 0.55);
   --ghost: rgba(0, 0, 0, 0.06);
+  --ember: #ff491b;
 }
 
 [data-palette="eucalyptus"] {
@@ -32,6 +34,7 @@
   --hair: rgba(14, 26, 20, 0.14);
   --faint: rgba(14, 26, 20, 0.5);
   --ghost: rgba(14, 26, 20, 0.06);
+  --ember: #ff491b;
 }
 
 [data-palette="inverse"] {
@@ -40,6 +43,7 @@
   --hair: rgba(246, 244, 239, 0.16);
   --faint: rgba(246, 244, 239, 0.6);
   --ghost: rgba(246, 244, 239, 0.08);
+  --ember: #ff6a3d;
 }
 
 @theme inline {
@@ -48,6 +52,7 @@
   --color-hair: var(--hair);
   --color-faint: var(--faint);
   --color-ghost: var(--ghost);
+  --color-ember: var(--ember);
   --font-mono:
     var(--font-mono), "JetBrains Mono", "IBM Plex Mono", ui-monospace, Menlo,
     monospace;

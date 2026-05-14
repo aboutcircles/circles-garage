@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "circles/garage — builder program",
   description:
     "circles/garage — builder program. Ship mini-apps on Circles. Get paid every Monday.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@workspace/ui/lib/utils";
+import { BrandBar } from "./BrandBar";
 import { StatusBar } from "./StatusBar";
 import { CmdBar } from "./CmdBar";
 
@@ -14,8 +15,8 @@ type PageProps = {
 
 /**
  * Outer chrome for every screen. Renders the dark <StatusBar>, a padded body
- * slot, and the light <CmdBar>. `scroll` toggles whether the body region
- * overflows vertically.
+ * slot, the light <CmdBar>, and the Partner Placement <BrandBar> at the
+ * bottom. `scroll` toggles whether the body region overflows vertically.
  */
 export function Page({
   children,
@@ -37,6 +38,7 @@ export function Page({
         {children}
       </main>
       <CmdBar breadcrumb={breadcrumb} cmd={cmd} />
+      <BrandBar />
     </div>
   );
 }

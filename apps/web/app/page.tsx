@@ -53,7 +53,6 @@ export default async function LandingPage() {
     if (c.k === "auto-snapshot") return { ...c, v: cycleInfo.endsAtLabel };
     return c;
   });
-  const signedCount = counters[0]?.v ?? "0";
   const countersHint = live ? "live · 15s refresh" : "static";
 
   return (
@@ -66,13 +65,13 @@ export default async function LandingPage() {
           <SDot />
           <S k="pool" v={p.pool} accent />
           <SDot />
-          <S k="builders" v={signedCount} />
-          <SDot />
           <S
             k="snapshot"
             v={<LiveCountdown targetMs={cycleInfo.endsAtMs} />}
             accent
           />
+          <SDot />
+          <span><span className="text-ember mr-1">●</span>live</span>
         </>
       }
       breadcrumb="welcome · open call · public"
@@ -90,7 +89,7 @@ export default async function LandingPage() {
             sub={L.sub}
             ctas={
               <>
-                <Btn primary href="/signup">
+                <Btn ember href="/signup">
                   {L.ctaPrimary}
                 </Btn>
                 <Btn href="/register">{L.ctaSecondary}</Btn>

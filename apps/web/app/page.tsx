@@ -159,33 +159,35 @@ export default async function LandingPage() {
               </div>
             ) : (
               <>
-                <Table
-                  head={["#", "builder · app", "mints", "payout"]}
-                  sizes={[{ w: 28 }, {}, { right: true }, { right: true }]}
-                  rows={content.leaderboard.slice(0, 5).map((r) => ({
-                    _muted: r.muted,
-                    cells: [
-                      {
-                        v:
-                          String(r.rank).padStart(2, "0") +
-                          (r.star ? " ★" : ""),
-                        muted: true,
-                      },
-                      {
-                        v: (
-                          <>
-                            <b>{r.builder}</b>
-                            <span className="ml-1.5 text-faint">
-                              ↳ {r.app}
-                            </span>
-                          </>
-                        ),
-                      },
-                      { v: r.mints },
-                      { v: r.payout, bold: true },
-                    ],
-                  }))}
-                />
+                <div className="overflow-x-auto">
+                  <Table
+                    head={["#", "builder · app", "mints", "payout"]}
+                    sizes={[{ w: 28 }, {}, { right: true }, { right: true }]}
+                    rows={content.leaderboard.slice(0, 5).map((r) => ({
+                      _muted: r.muted,
+                      cells: [
+                        {
+                          v:
+                            String(r.rank).padStart(2, "0") +
+                            (r.star ? " ★" : ""),
+                          muted: true,
+                        },
+                        {
+                          v: (
+                            <>
+                              <b>{r.builder}</b>
+                              <span className="ml-1.5 text-faint">
+                                ↳ {r.app}
+                              </span>
+                            </>
+                          ),
+                        },
+                        { v: r.mints },
+                        { v: r.payout, bold: true },
+                      ],
+                    }))}
+                  />
+                </div>
                 <div className="mt-2.5 font-mono text-[11px] text-faint">
                   ↳{" "}
                   <a

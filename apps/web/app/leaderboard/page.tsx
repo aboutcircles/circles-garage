@@ -72,48 +72,51 @@ export default function LeaderboardPage() {
                 <span>export csv ↓</span>
               </div>
 
-              <Table
-                head={[
-                  "#",
-                  "builder",
-                  "org",
-                  "app",
-                  "pitch",
-                  "mints",
-                  "vol",
-                  "payout",
-                  "streak",
-                ]}
-                sizes={[
-                  { w: 30 },
-                  {},
-                  {},
-                  {},
-                  {},
-                  { right: true },
-                  { right: true },
-                  { right: true },
-                  { right: true, w: 50 },
-                ]}
-                rows={rows.map((r) => ({
-                  _muted: r.muted,
-                  cells: [
-                    {
-                      v:
-                        String(r.rank).padStart(2, "0") + (r.star ? " ★" : ""),
-                      muted: true,
-                    },
-                    { v: r.builder, bold: true },
-                    { v: r.org, muted: true, size: 11 },
-                    { v: r.app, bold: true },
-                    { v: r.pitch, muted: true, size: 11 },
-                    { v: r.mints },
-                    { v: r.vol, muted: true },
-                    { v: r.payout, bold: true },
-                    { v: r.streak, muted: true, size: 11 },
-                  ],
-                }))}
-              />
+              <div className="overflow-x-auto">
+                <Table
+                  head={[
+                    "#",
+                    "builder",
+                    "org",
+                    "app",
+                    "pitch",
+                    "mints",
+                    "vol",
+                    "payout",
+                    "streak",
+                  ]}
+                  sizes={[
+                    { w: 30 },
+                    {},
+                    {},
+                    {},
+                    {},
+                    { right: true },
+                    { right: true },
+                    { right: true },
+                    { right: true, w: 50 },
+                  ]}
+                  rows={rows.map((r) => ({
+                    _muted: r.muted,
+                    cells: [
+                      {
+                        v:
+                          String(r.rank).padStart(2, "0") +
+                          (r.star ? " ★" : ""),
+                        muted: true,
+                      },
+                      { v: r.builder, bold: true },
+                      { v: r.org, muted: true, size: 11 },
+                      { v: r.app, bold: true },
+                      { v: r.pitch, muted: true, size: 11 },
+                      { v: r.mints },
+                      { v: r.vol, muted: true },
+                      { v: r.payout, bold: true },
+                      { v: r.streak, muted: true, size: 11 },
+                    ],
+                  }))}
+                />
+              </div>
 
               <div className="mt-3.5 flex justify-between font-mono text-[11px] text-faint">
                 <span>↳ {rows.length} builders</span>

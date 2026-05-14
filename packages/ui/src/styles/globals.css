@@ -52,3 +52,16 @@
     var(--font-mono), "JetBrains Mono", "IBM Plex Mono", ui-monospace, Menlo,
     monospace;
 }
+
+/* ── responsive ────────────────────────────────────────────────────
+   `Grid` emits `.grid-collapse-md` when its `cols` prop is a string
+   template or `collapseAt` is set. Inline styles set
+   `grid-template-columns/rows` per call site, so `!important` is
+   required to override them at the breakpoint.                        */
+
+@media (max-width: 767px) {
+  .grid-collapse-md {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+}

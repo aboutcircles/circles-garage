@@ -29,6 +29,11 @@ dist
 
 .claude
 .context
+.gstack/
+
+# Local-only spec archive (kept out of git)
+_spec/
+
 # Debug
 npm-debug.log*
 

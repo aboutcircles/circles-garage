@@ -39,7 +39,7 @@ export function Grid({
     <div
       className={cn(
         "grid",
-        fill ? "h-full" : "h-auto",
+        fill ? "min-h-full" : "h-auto",
         shouldCollapse && "grid-collapse-md",
         className,
       )}

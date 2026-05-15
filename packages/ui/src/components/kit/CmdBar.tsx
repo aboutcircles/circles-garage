@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Kbd } from "./Kbd";
 
 type CmdBarProps = {
   breadcrumb?: ReactNode;
@@ -8,7 +7,7 @@ type CmdBarProps = {
 
 /**
  * Light strip at the bottom of every <Page>. Breadcrumb / command hint on the
- * left, fixed keyboard shortcut chips on the right.
+ * left.
  */
 export function CmdBar({ breadcrumb, cmd }: CmdBarProps) {
   return (
@@ -17,23 +16,9 @@ export function CmdBar({ breadcrumb, cmd }: CmdBarProps) {
         {breadcrumb ?? (
           <>
             <span className="text-ink">:</span>{" "}
-            <span className="opacity-60">{cmd ?? "press ? for help"}</span>
+            <span className="opacity-60">{cmd ?? ""}</span>
           </>
         )}
-      </span>
-      <span className="flex gap-4">
-        <span>
-          <Kbd>?</Kbd> help
-        </span>
-        <span>
-          <Kbd>g</Kbd> goto
-        </span>
-        <span>
-          <Kbd>n</Kbd> new app
-        </span>
-        <span>
-          <Kbd>q</Kbd> sign out
-        </span>
       </span>
     </footer>
   );

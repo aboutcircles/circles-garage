@@ -2,7 +2,7 @@ import { Wordmark } from "./Wordmark";
 
 const LINKS: ReadonlyArray<{ label: string; href: string }> = [
   { label: "aboutcircles.com", href: "https://aboutcircles.com" },
-  { label: "docs.aboutcircles.com", href: "https://docs.aboutcircles.com" },
+  { label: "docs.aboutcircles.com/miniapps", href: "https://docs.aboutcircles.com/miniapps" },
   { label: "t.me/about_circles", href: "https://t.me/about_circles/499" },
 ];
 

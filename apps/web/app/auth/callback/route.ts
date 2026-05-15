@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getPublicOrigin } from "@/lib/origin";
 
 function safeNext(raw: string | null): string {
   if (!raw) return "/";
@@ -10,7 +11,8 @@ function safeNext(raw: string | null): string {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
+  const origin = getPublicOrigin(request);
   const code = searchParams.get("code");
   const next = safeNext(searchParams.get("next"));
 

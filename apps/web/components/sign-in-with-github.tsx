@@ -28,10 +28,13 @@ export function SignInWithGitHub({
     try {
       const supabase = createClient();
       const target = next ?? pathname ?? "/";
+      const baseOrigin =
+        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+        window.location.origin;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(target)}`,
+          redirectTo: `${baseOrigin}/auth/callback?next=${encodeURIComponent(target)}`,
         },
       });
       if (error) {

@@ -3,20 +3,17 @@
 import { useRef, useState } from "react";
 import {
   Btn,
-  Check,
   Field,
   Hero,
   Input,
   Section,
   Select,
-  Slot,
   Steps,
   Textarea,
 } from "@workspace/ui/kit";
 import { createSubmission } from "./actions";
 import type { Draft } from "@/lib/content";
 
-type Contract = { chain: string; addr: string; label: string };
 type ReadmeState = { what: string; why: string; try: string };
 
 type FormState = {
@@ -25,11 +22,23 @@ type FormState = {
   pitch: string;
   track: string;
   status: string;
-  contracts: Contract[];
+  contracts_text: string;
   live_url: string;
   repo_url: string;
   readme: ReadmeState;
-  measures: string[];
+};
+
+export type SubmissionRow = {
+  app_name: string;
+  slug: string;
+  pitch: string;
+  track: string | null;
+  status: string;
+  cycle: number;
+  live_url: string;
+  repo_url: string | null;
+  contracts: { chain?: string; addr?: string; label?: string }[];
+  readme: { what?: string; why?: string; try?: string } | null;
 };
 
 const TRACK_OPTIONS = [
@@ -40,7 +49,7 @@ const TRACK_OPTIONS = [
   { value: "other", label: "other" },
 ] as const;
 
-const STEPS = ["identity", "contracts", "proof", "measures", "review"] as const;
+const STEPS = ["identity", "contracts", "proof", "review"] as const;
 
 const DISABLED_CLS = "disabled:opacity-40 disabled:cursor-not-allowed";
 
@@ -51,26 +60,107 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
-export function RegisterClient({ draft }: { draft: Draft }) {
-  const [step, setStep] = useState(0);
-  const slugTouched = useRef(false);
+function parseContracts(text: string): { chain: string; addr: string; label: string }[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((addr) => ({ chain: "gnosis", addr, label: "" }));
+}
 
-  const [data, setData] = useState<FormState>({
-    app_name: "",
-    slug: "",
-    pitch: "",
-    track: "",
-    status: "",
-    contracts: [{ chain: "", addr: "", label: "" }],
-    live_url: "",
-    repo_url: "",
-    readme: { what: "", why: "", try: "" },
-    measures: [],
-  });
+function looksLikeUrl(s: string): boolean {
+  const t = s.trim();
+  return t.startsWith("http://") || t.startsWith("https://");
+}
+
+function initialFormState(existing: SubmissionRow | null): FormState {
+  if (!existing) {
+    return {
+      app_name: "",
+      slug: "",
+      pitch: "",
+      track: "",
+      status: "",
+      contracts_text: "",
+      live_url: "",
+      repo_url: "",
+      readme: { what: "", why: "", try: "" },
+    };
+  }
+  const contracts_text = (existing.contracts ?? [])
+    .map((c) => (typeof c?.addr === "string" ? c.addr : ""))
+    .filter((a) => a.length > 0)
+    .join("\n");
+  return {
+    app_name: existing.app_name ?? "",
+    slug: existing.slug ?? "",
+    pitch: existing.pitch ?? "",
+    track: existing.track ?? "",
+    status: existing.status ?? "",
+    contracts_text,
+    live_url: existing.live_url ?? "",
+    repo_url: existing.repo_url ?? "",
+    readme: {
+      what: existing.readme?.what ?? "",
+      why: existing.readme?.why ?? "",
+      try: existing.readme?.try ?? "",
+    },
+  };
+}
+
+type CheckItem = { label: string; ok: boolean };
+
+function computeChecks(data: FormState): CheckItem[] {
+  const liveOk = data.live_url.trim() !== "" && looksLikeUrl(data.live_url);
+  const contractOk = parseContracts(data.contracts_text).length > 0;
+  const readmeOk =
+    data.readme.what.trim() !== "" &&
+    data.readme.why.trim() !== "" &&
+    data.readme.try.trim() !== "";
+  return [
+    { label: "name", ok: data.app_name.trim() !== "" },
+    { label: "pitch", ok: data.pitch.trim() !== "" },
+    { label: "live link", ok: liveOk },
+    { label: "contract", ok: contractOk },
+    { label: "readme", ok: readmeOk },
+  ];
+}
+
+function ChecksStrip({ checks }: { checks: CheckItem[] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px]">
+      <span className="text-faint">checks:</span>
+      {checks.map((c, i) => (
+        <span key={c.label} className="flex items-center gap-1">
+          <span className={c.ok ? "text-ink" : "text-faint"}>
+            {c.ok ? "✓" : "✗"} {c.label}
+          </span>
+          {i < checks.length - 1 && (
+            <span className="text-faint">·</span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function RegisterClient({
+  draft,
+  existing = null,
+}: {
+  draft: Draft;
+  existing?: SubmissionRow | null;
+}) {
+  const [step, setStep] = useState(0);
+  const slugTouched = useRef(!!existing?.slug);
+
+  const [data, setData] = useState<FormState>(() => initialFormState(existing));
   const [status, setStatus] = useState<"idle" | "submitting" | "ok" | "err">(
     "idle",
   );
   const [err, setErr] = useState<string | null>(null);
+
+  const isEditing = !!existing;
 
   const setName = (v: string) => {
     setData((d) => ({
@@ -83,39 +173,27 @@ export function RegisterClient({ draft }: { draft: Draft }) {
     slugTouched.current = true;
     setData((d) => ({ ...d, slug: v }));
   };
-  const setText = (n: Exclude<keyof FormState, "contracts" | "readme" | "measures">) => (v: string) =>
-    setData((d) => ({ ...d, [n]: v }));
+  const setText =
+    (n: Exclude<keyof FormState, "contracts_text" | "readme">) =>
+    (v: string) =>
+      setData((d) => ({ ...d, [n]: v }));
+  const setContractsText = (v: string) =>
+    setData((d) => ({ ...d, contracts_text: v }));
   const setReadme = (n: keyof ReadmeState) => (v: string) =>
     setData((d) => ({ ...d, readme: { ...d.readme, [n]: v } }));
 
-  const setContract = (i: number, key: keyof Contract) => (v: string) =>
-    setData((d) => {
-      const next = d.contracts.slice();
-      next[i] = { ...next[i]!, [key]: v };
-      return { ...d, contracts: next };
-    });
-  const addContract = () =>
-    setData((d) => ({
-      ...d,
-      contracts: [...d.contracts, { chain: "", addr: "", label: "" }],
-    }));
-  const removeContract = (i: number) =>
-    setData((d) => ({
-      ...d,
-      contracts: d.contracts.filter((_, j) => j !== i),
-    }));
-
-  const toggleMeasure = (label: string) =>
-    setData((d) => ({
-      ...d,
-      measures: d.measures.includes(label)
-        ? d.measures.filter((m) => m !== label)
-        : [...d.measures, label],
-    }));
+  const checks = computeChecks(data);
+  const allChecksOk = checks.every((c) => c.ok);
 
   const stepValid = (s: number): boolean => {
     if (s === 0) return data.app_name.trim() !== "" && data.pitch.trim() !== "";
-    if (s === 2) return data.live_url.trim() !== "";
+    if (s === 2)
+      return (
+        data.live_url.trim() !== "" && looksLikeUrl(data.live_url)
+      );
+    // Review step gates on all checks — keeps a cleared pitch / wiped live
+    // link from slipping past on a resubmit.
+    if (s === 3) return allChecksOk;
     return true;
   };
   const canAdvance = stepValid(step);
@@ -131,13 +209,7 @@ export function RegisterClient({ draft }: { draft: Draft }) {
   const submit = async () => {
     setStatus("submitting");
     setErr(null);
-    const cleanedContracts = data.contracts
-      .map((c) => ({
-        chain: c.chain.trim(),
-        addr: c.addr.trim(),
-        label: c.label.trim(),
-      }))
-      .filter((c) => c.chain || c.addr || c.label);
+    const cleanedContracts = parseContracts(data.contracts_text);
     const result = await createSubmission({
       app_name: data.app_name.trim(),
       slug: (data.slug || slugify(data.app_name)).trim(),
@@ -147,7 +219,6 @@ export function RegisterClient({ draft }: { draft: Draft }) {
       live_url: data.live_url.trim(),
       repo_url: data.repo_url.trim() || null,
       readme: data.readme,
-      measures: data.measures,
     });
     if (!result.ok) {
       setErr(result.message);
@@ -165,22 +236,21 @@ export function RegisterClient({ draft }: { draft: Draft }) {
       <>
         <Hero
           size="lg"
-          sub={`${data.app_name} queued. measurement starts at the next snapshot.`}
+          sub={`${data.app_name} ${isEditing ? "updated" : "queued"}. measurement starts at the next snapshot.`}
         >
-          submitted.
+          saved.
         </Hero>
         <div className="mt-7 border-t border-hair pt-4 font-mono text-xs leading-[1.6] text-faint">
           {"// "}submissions/{data.slug || slugify(data.app_name)} — status:
           draft.
           <br />
-          {"// "}editing existing submissions is not yet wired up; resubmit to
-          amend.
+          {"// "}resubmit anytime before the snapshot to overwrite.
         </div>
         <div className="mt-7 flex items-center gap-2.5">
           <Btn primary href="/leaderboard">
             see leaderboard →
           </Btn>
-          <Btn href="/">← back to landing</Btn>
+          <Btn href="/dashboard">← back to dashboard</Btn>
         </div>
       </>
     );
@@ -188,13 +258,21 @@ export function RegisterClient({ draft }: { draft: Draft }) {
 
   return (
     <>
+      <div className="mb-4 border-b border-hair pb-3">
+        <ChecksStrip checks={checks} />
+      </div>
+
       <div className="flex flex-wrap items-end justify-between gap-5">
         <Hero
           size="md"
-          sub="Save as you go — only “submit” makes it eligible for the next snapshot."
+          sub={
+            isEditing
+              ? "Editing your submission for this cycle — every save overwrites the current entry. The latest version at snapshot is what we judge."
+              : "Every submit overwrites your current entry. The latest version at snapshot is what we judge."
+          }
         >
-          new submission
-          <span className="text-faint">.draft</span>
+          {isEditing ? "editing" : "new submission"}
+          <span className="text-faint">{isEditing ? "" : ".draft"}</span>
         </Hero>
         <Steps all={STEPS} current={step} />
       </div>
@@ -275,56 +353,17 @@ export function RegisterClient({ draft }: { draft: Draft }) {
         <Section
           num="02"
           label="contracts"
-          hint="up to 5 · we subscribe to events"
+          hint="one address per line · gnosis"
         >
-          <div className="flex flex-col gap-1">
-            {data.contracts.map((c, i) => (
-              <div
-                key={i}
-                className="grid items-baseline gap-2 border-b border-dotted border-hair py-2.5"
-                style={{ gridTemplateColumns: "80px 1fr 140px auto" }}
-              >
-                <input
-                  aria-label={`contract ${i + 1} chain`}
-                  className="border-0 bg-transparent font-mono text-[13px] text-ink outline-none placeholder:italic placeholder:text-faint"
-                  placeholder="chain"
-                  value={c.chain}
-                  onChange={(e) => setContract(i, "chain")(e.target.value)}
-                />
-                <input
-                  aria-label={`contract ${i + 1} address`}
-                  className="border-0 bg-transparent font-mono text-[13px] text-ink outline-none placeholder:italic placeholder:text-faint"
-                  placeholder="0x____________________________________"
-                  value={c.addr}
-                  onChange={(e) => setContract(i, "addr")(e.target.value)}
-                />
-                <input
-                  aria-label={`contract ${i + 1} label`}
-                  className="border-0 bg-transparent font-mono text-[13px] text-ink outline-none placeholder:italic placeholder:text-faint"
-                  placeholder="label · e.g. hub"
-                  value={c.label}
-                  onChange={(e) => setContract(i, "label")(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeContract(i)}
-                  disabled={data.contracts.length === 1}
-                  className={`cursor-pointer font-mono text-[11px] text-faint hover:text-ink ${DISABLED_CLS}`}
-                  aria-label={`remove contract ${i + 1}`}
-                >
-                  × remove
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex items-center gap-2.5">
-            <Btn sm onClick={addContract} disabled={data.contracts.length >= 5} className={DISABLED_CLS}>
-              + add contract
-            </Btn>
-            <span className="font-mono text-[11px] text-faint">
-              {data.contracts.length}/5 · optional
-            </span>
-          </div>
+          <Textarea
+            name="contracts_text"
+            label="gnosis contracts"
+            value={data.contracts_text}
+            onChange={setContractsText}
+            placeholder={"0x4a82…9f12\n0x9911…c0e0"}
+            hint="one address per line"
+            rows={5}
+          />
         </Section>
       )}
 
@@ -332,7 +371,7 @@ export function RegisterClient({ draft }: { draft: Draft }) {
         <Section
           num="03"
           label="proof of life"
-          hint="live · repo · screenshots · readme"
+          hint="live · repo · readme"
         >
           <Input
             name="live_url"
@@ -342,6 +381,7 @@ export function RegisterClient({ draft }: { draft: Draft }) {
             value={data.live_url}
             onChange={setText("live_url")}
             placeholder={draft.liveLink}
+            hint="full URL · starts with http:// or https://"
           />
           <Input
             name="repo_url"
@@ -351,14 +391,6 @@ export function RegisterClient({ draft }: { draft: Draft }) {
             onChange={setText("repo_url")}
             placeholder={draft.repo}
           />
-          <div className="mt-3.5 grid grid-cols-3 gap-2">
-            <Slot label="screenshot · home" h={84} />
-            <Slot label="screenshot · flow" h={84} />
-            <Slot label="+ upload (soon)" h={84} />
-          </div>
-          <div className="mt-1 font-mono text-[10px] text-faint">
-            ↳ uploads not yet wired · readme below is what we read for now.
-          </div>
 
           <div className="mt-4">
             <Textarea
@@ -389,73 +421,41 @@ export function RegisterClient({ draft }: { draft: Draft }) {
         </Section>
       )}
 
-      {step === 3 && (
-        <Section
-          num="04"
-          label="how to be measured"
-          hint="tick what counts · changeable once per cycle"
-        >
-          <div className="flex flex-col">
-            {draft.measures.map((m) => {
-              const on = data.measures.includes(m.label);
-              return (
-                <label
-                  key={m.label}
-                  className="flex cursor-pointer items-center gap-2.5 border-b border-dotted border-hair py-2.5 font-mono text-[13px]"
-                >
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={on}
-                    onChange={() => toggleMeasure(m.label)}
-                  />
-                  <span
-                    className={`relative inline-block h-3.5 w-3.5 shrink-0 border-[1.5px] border-ink ${on ? "bg-ink" : "bg-transparent"}`}
-                  >
-                    {on && (
-                      <span className="absolute top-[-4px] left-px text-[13px] font-bold text-paper">
-                        ✓
-                      </span>
-                    )}
-                  </span>
-                  <span className="flex-1">{m.label}</span>
-                  {m.hint && (
-                    <span className="text-[11px] text-faint">{m.hint}</span>
-                  )}
-                </label>
-              );
-            })}
-          </div>
-        </Section>
-      )}
-
       {isReview && (
         <>
           <div className="mt-7 border-2 border-ink p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                  last step · cycle 01
+                  last step
                 </div>
                 <div className="font-mono text-[18px] font-bold leading-tight tracking-[-0.3px]">
-                  review &amp; submit
+                  review &amp; {isEditing ? "save" : "submit"}
                 </div>
                 <div className="mt-2 font-mono text-[11px] leading-[1.55] text-faint">
-                  ↳ Check details below. Click submit to write a row to{" "}
+                  ↳ Check details below. Click{" "}
+                  {isEditing ? "save" : "submit"} to write a row to{" "}
                   <code className="bg-ghost px-1">submissions</code>.
                 </div>
               </div>
               <Btn
                 primary
                 onClick={submit}
-                disabled={status === "submitting"}
+                disabled={status === "submitting" || !allChecksOk}
                 className={DISABLED_CLS}
               >
                 {status === "submitting"
                   ? "writing..."
-                  : "submit for cycle 01 →"}
+                  : isEditing
+                    ? "save changes →"
+                    : "submit →"}
               </Btn>
             </div>
+            {!allChecksOk && (
+              <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px] text-faint">
+                ↳ fix the missing checks above before submitting.
+              </div>
+            )}
             {err && (
               <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px] text-ink">
                 ! {err}
@@ -486,18 +486,14 @@ export function RegisterClient({ draft }: { draft: Draft }) {
 
           <Section num="02" label="contracts">
             <div className="font-mono text-[13px] leading-[1.95]">
-              {data.contracts.filter((c) => c.chain || c.addr || c.label)
-                .length === 0 ? (
+              {parseContracts(data.contracts_text).length === 0 ? (
                 <div className="text-faint italic">— none added —</div>
               ) : (
-                data.contracts
-                  .filter((c) => c.chain || c.addr || c.label)
-                  .map((c, i) => (
-                    <div key={i}>
-                      [{c.chain || "?"}] {c.addr || "0x?"} ·{" "}
-                      {c.label || "(unlabeled)"}
-                    </div>
-                  ))
+                parseContracts(data.contracts_text).map((c, i) => (
+                  <div key={i}>
+                    [{c.chain}] {c.addr}
+                  </div>
+                ))
               )}
             </div>
           </Section>
@@ -531,18 +527,6 @@ export function RegisterClient({ draft }: { draft: Draft }) {
               </div>
             </div>
           </Section>
-
-          <Section num="04" label="measures">
-            {draft.measures.map((m) => (
-              <Check
-                key={m.label}
-                line
-                on={data.measures.includes(m.label)}
-                label={m.label}
-                hint={m.hint}
-              />
-            ))}
-          </Section>
         </>
       )}
 
@@ -575,10 +559,14 @@ export function RegisterClient({ draft }: { draft: Draft }) {
           <Btn
             primary
             onClick={submit}
-            disabled={status === "submitting"}
+            disabled={status === "submitting" || !allChecksOk}
             className={DISABLED_CLS}
           >
-            {status === "submitting" ? "writing..." : "submit for cycle 01 →"}
+            {status === "submitting"
+              ? "writing..."
+              : isEditing
+                ? "save changes →"
+                : "submit →"}
           </Btn>
         )}
       </div>

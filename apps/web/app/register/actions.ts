@@ -12,14 +12,13 @@ export type SubmissionInput = {
   live_url: string;
   repo_url: string | null;
   readme: { what: string; why: string; try: string };
-  measures: string[];
 };
 
 export type SubmissionResult =
   | { ok: true; cycle: number }
   | {
       ok: false;
-      code: "unauthenticated" | "no_builder" | "duplicate" | "unknown";
+      code: "unauthenticated" | "no_builder" | "unknown";
       message: string;
     };
 
@@ -55,31 +54,28 @@ export async function createSubmission(
 
   const cycle = getCycleInfo().cycle;
 
-  const { error } = await supabase.from("submissions").insert({
-    user_id: user.id,
-    app_name: input.app_name,
-    slug: input.slug,
-    pitch: input.pitch,
-    track: input.track,
-    status: "draft",
-    cycle,
-    contracts: input.contracts,
-    live_url: input.live_url,
-    repo_url: input.repo_url,
-    screenshots: [],
-    readme: input.readme,
-    measures: input.measures,
-  });
+  // Note: `screenshots` and `measures` columns still exist in the schema
+  // but are no longer collected by the form. Omit them from the upsert
+  // payload so resubmits don't clobber any future server-set values; the
+  // column defaults (`'{}'`) fire on first insert.
+  const { error } = await supabase.from("submissions").upsert(
+    {
+      user_id: user.id,
+      app_name: input.app_name,
+      slug: input.slug,
+      pitch: input.pitch,
+      track: input.track,
+      status: "draft",
+      cycle,
+      contracts: input.contracts,
+      live_url: input.live_url,
+      repo_url: input.repo_url,
+      readme: input.readme,
+    },
+    { onConflict: "user_id,cycle" },
+  );
 
   if (error) {
-    const code = (error as { code?: string }).code;
-    if (code === "23505") {
-      return {
-        ok: false,
-        code: "duplicate",
-        message: `you already have a submission in cycle ${cycle}. one app per cycle.`,
-      };
-    }
     return { ok: false, code: "unknown", message: error.message };
   }
 

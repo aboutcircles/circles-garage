@@ -6,7 +6,7 @@ export type SignupInput = {
   handle: string;
   reach: string;
   circles_addr: string;
-  org_addr: string;
+  org_addr: string | null;
   team: string[];
   app_name: string;
   track: string | null;
@@ -31,12 +31,15 @@ export async function createBuilder(input: SignupInput): Promise<SignupResult> {
     };
   }
 
+  const orgAddr =
+    input.org_addr && input.org_addr.trim() !== "" ? input.org_addr : null;
+
   const { error } = await supabase.from("builders").insert({
     user_id: user.id,
     handle: input.handle,
     reach: input.reach,
     circles_addr: input.circles_addr,
-    org_addr: input.org_addr,
+    org_addr: orgAddr,
     team: input.team,
     app_name: input.app_name,
     track: input.track,

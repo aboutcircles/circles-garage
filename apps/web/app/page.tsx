@@ -50,11 +50,39 @@ export default async function LandingPage() {
     supabase.auth.getUser(),
   ]);
   const signedIn = !!authResult.data.user;
+  const now = new Date();
+  const programOpen = now.getTime() >= cycleInfo.startedAtMs;
+  const berlinFmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Berlin",
+    day: "numeric",
+    month: "short",
+  });
+  const todayParts = berlinFmt.formatToParts(now);
+  const todayBerlinDay = Number(
+    todayParts.find((p) => p.type === "day")?.value ?? NaN,
+  );
+  const todayBerlinMonth =
+    todayParts.find((p) => p.type === "month")?.value.toUpperCase() ?? "";
+  const startsAtLabel = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "Europe/Berlin",
+  })
+    .format(new Date(cycleInfo.startedAtMs))
+    .toUpperCase();
   const counters = content.counters.map((c) => {
     if (live && c.k === "builders signed") return { ...c, v: String(live.builders) };
     if (live && c.k === "mini-apps submitted")
       return { ...c, v: String(live.submissions) };
-    if (c.k === "auto-snapshot") return { ...c, v: cycleInfo.endsAtLabel };
+    if (c.k === "builders signed")
+      return {
+        ...c,
+        d: programOpen
+          ? `cycle ${cycleInfo.cycleLabel} · live`
+          : "open call · pre-launch",
+      };
+    if (c.k === "grand finale") return { ...c, v: cycleInfo.finaleLabel };
     return c;
   });
   const countersHint = live ? "live · 15s refresh" : "static";
@@ -75,7 +103,12 @@ export default async function LandingPage() {
             accent
           />
           <SDot />
-          <span><span className="text-ember mr-1">●</span>live</span>
+          <span>
+            <span className={programOpen ? "text-ember mr-1" : "text-faint mr-1"}>
+              ●
+            </span>
+            {programOpen ? "live" : "open call"}
+          </span>
           <UserBadge />
         </>
       }
@@ -162,7 +195,9 @@ export default async function LandingPage() {
             {lbCount === 0 ? (
               <div className="py-2 font-mono text-[13px] leading-[1.7]">
                 <div className="text-faint">
-                  no entries yet · cycle {cycle} just opened.
+                  {programOpen
+                    ? `no entries yet · cycle ${cycle} is open.`
+                    : `cycle ${cycle} opens ${startsAtLabel}.`}
                 </div>
                 <div className="mt-2.5">
                   <a
@@ -239,79 +274,140 @@ export default async function LandingPage() {
           className="grid min-h-0 gap-3"
           style={{ gridTemplateRows: "auto auto auto 1fr" }}
         >
-          <Pane title={`cycle ${cycle} · pool`} hint="weekly · paid mon">
+          <Pane
+            title={`cycle ${cycle} · pool`}
+            hint="weekly · top 3 · paid friday"
+          >
             <div className="font-mono text-4xl font-bold leading-none tracking-[-1px]">
               {p.pool}
             </div>
-            <PoolBar />
-            <div className="mt-2.5 font-mono text-[11px] leading-[1.6] text-faint">
-              {p.poolSplit.winnersAmt} · winners pool ({p.poolSplit.winners}/
-              {p.poolSplit.denom})
-              <br />
-              {p.poolSplit.lifeAmt} · circle-of-life ({p.poolSplit.life}/
-              {p.poolSplit.denom})
-            </div>
+            <PrizesBreakdown />
           </Pane>
 
           <Pane title="counters" hint={countersHint}>
-            {counters.slice(0, 3).map((c, i, a) => {
-              const isSnapshot = c.k === "auto-snapshot";
+            {counters.slice(0, 4).map((c, i, a) => (
+              <div
+                key={c.k}
+                className={
+                  "grid items-baseline gap-x-3 py-2" +
+                  (i < a.length - 1
+                    ? " border-b border-dotted border-hair"
+                    : "")
+                }
+                style={{ gridTemplateColumns: "1fr auto" }}
+              >
+                <span>
+                  <span className="text-xl font-bold tracking-[-0.4px]">
+                    {c.v}
+                  </span>
+                  <span className="ml-2 text-[11px] text-faint">{c.k}</span>
+                </span>
+                <span className="text-[11px] text-faint">{c.d}</span>
+              </div>
+            ))}
+          </Pane>
+
+          <Pane title="schedule" hint={`cycle ${cycle}`}>
+            {content.schedule.map((s, i) => {
+              // s.d is either "MON 18" (weekday + day, current month) or
+              // "FRI 26 JUN" (weekday + day + month, e.g. grand finale).
+              // Match day-of-month AND month so e.g. "FRI 22" doesn't go
+              // "now" on the 22nd of every month.
+              const tokens = s.d.split(/\s+/);
+              const dayToken = tokens[1] ?? "";
+              const monthToken = (tokens[2] ?? "").toUpperCase();
+              const entryDay = Number(dayToken);
+              const entryMonth = monthToken || todayBerlinMonth;
+              const isNow =
+                Number.isFinite(entryDay) &&
+                entryDay === todayBerlinDay &&
+                entryMonth === todayBerlinMonth;
               return (
                 <div
-                  key={c.k}
+                  key={i}
                   className={
-                    "grid items-baseline gap-x-3 py-2" +
-                    (i < a.length - 1
+                    "grid items-center py-1.5 text-xs" +
+                    (i < content.schedule.length - 1
                       ? " border-b border-dotted border-hair"
                       : "")
                   }
-                  style={{ gridTemplateColumns: "1fr auto" }}
+                  style={{ gridTemplateColumns: "70px 1fr auto" }}
                 >
-                  <span>
-                    <span className="text-xl font-bold tracking-[-0.4px]">
-                      {c.v}
-                    </span>
-                    <span className="ml-2 text-[11px] text-faint">{c.k}</span>
+                  <span
+                    className={
+                      s.pinned ? "font-bold text-ink" : "text-faint"
+                    }
+                  >
+                    {s.pinned ? `★ ${s.d}` : s.d}
                   </span>
-                  <span className="text-[11px] text-faint">
-                    {isSnapshot ? (
-                      <>
-                        <LiveCountdown targetMs={cycleInfo.endsAtMs} /> · 23:59
-                        CET
-                      </>
+                  <span className={s.pinned ? "font-bold" : undefined}>
+                    {s.href ? (
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border-b border-ink text-ink hover:bg-ghost"
+                      >
+                        {s.body}
+                      </a>
                     ) : (
-                      c.d
+                      s.body
                     )}
                   </span>
+                  {isNow && <Pill className="text-[9px]">now</Pill>}
                 </div>
               );
             })}
           </Pane>
 
-          <Pane title="schedule" hint={`cycle ${cycle}`}>
-            {content.schedule.map((s, i) => (
-              <div
-                key={i}
-                className={
-                  "grid items-center py-1.5 text-xs" +
-                  (i < content.schedule.length - 1
-                    ? " border-b border-dotted border-hair"
-                    : "")
-                }
-                style={{ gridTemplateColumns: "70px 1fr auto" }}
-              >
-                <span className="text-faint">{s.d}</span>
-                <span>{s.body}</span>
-                {s.now && <Pill className="text-[9px]">now</Pill>}
-              </div>
-            ))}
-          </Pane>
-
           <Pane title="bulletin" hint="from the team">
             <div className="font-mono text-xs leading-[1.7]">
-              {L.bulletin.map((b, i) => (
-                <div key={i}>· {b}</div>
-              ))}
+              {L.bulletin.map((b, i) => {
+                if (!b.href) {
+                  return (
+                    <div key={i}>
+                      · <span className="text-faint">{b.text}</span>
+                      <span className="ml-1.5 text-[10px] uppercase tracking-[0.18em] text-faint">
+                        [soon]
+                      </span>
+                    </div>
+                  );
+                }
+                if (b.hrefLabel) {
+                  const idx = b.text.indexOf(b.hrefLabel);
+                  if (idx >= 0) {
+                    const before = b.text.slice(0, idx);
+                    const after = b.text.slice(idx + b.hrefLabel.length);
+                    return (
+                      <div key={i}>
+                        · {before}
+                        <a
+                          href={b.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="border-b border-ink text-ink hover:bg-ghost"
+                        >
+                          {b.hrefLabel}
+                        </a>
+                        {after}
+                      </div>
+                    );
+                  }
+                }
+                return (
+                  <div key={i}>
+                    ·{" "}
+                    <a
+                      href={b.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border-b border-ink text-ink hover:bg-ghost"
+                    >
+                      {b.text}
+                    </a>
+                  </div>
+                );
+              })}
             </div>
           </Pane>
         </div>
@@ -320,19 +416,34 @@ export default async function LandingPage() {
   );
 }
 
-function PoolBar() {
-  const s = content.program.poolSplit;
-  const pct = (s.winners / s.denom) * 100;
+function PrizesBreakdown() {
+  const { first, second, third, total, currency } = content.program.prizes;
+  const rows: readonly [string, string][] = [
+    ["1st", first],
+    ["2nd", second],
+    ["3rd", third],
+  ];
   return (
-    <div className="mt-2.5 flex h-5 border border-ink font-mono text-[10px]">
+    <div className="mt-2.5 font-mono text-xs leading-[1.6]">
+      {rows.map(([label, amount]) => (
+        <div
+          key={label}
+          className="grid items-baseline border-b border-dotted border-hair py-1.5"
+          style={{ gridTemplateColumns: "1fr auto" }}
+        >
+          <span className="text-faint">{label}</span>
+          <span className="font-bold">{amount}</span>
+        </div>
+      ))}
       <div
-        className="flex items-center bg-ink px-2 text-paper"
-        style={{ width: pct + "%" }}
+        className="grid items-baseline border-t border-hair py-1.5"
+        style={{ gridTemplateColumns: "1fr auto" }}
       >
-        {s.winners}/{s.denom} winners
-      </div>
-      <div className="flex flex-1 items-center px-2">
-        {s.life}/{s.denom} life
+        <span className="text-faint">total</span>
+        <span>
+          <span className="font-bold">{total}</span>
+          <span className="ml-1.5 text-faint">· {currency}</span>
+        </span>
       </div>
     </div>
   );

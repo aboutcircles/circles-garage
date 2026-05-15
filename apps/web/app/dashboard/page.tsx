@@ -121,7 +121,9 @@ export default async function DashboardPage() {
           <UserBadge />
         </>
       }
-      breadcrumb={`signed-in · @${githubLogin} · org: ${builder.org_addr}`}
+      breadcrumb={`signed-in · @${githubLogin}${
+        builder.org_addr ? ` · org: ${builder.org_addr}` : ""
+      }`}
     >
       <Grid cols="1.4fr 1fr" gap={12} fill>
         <Pane title="dashboard" hint={`cycle ${cycleInfo.cycleLabel}`} span={2}>

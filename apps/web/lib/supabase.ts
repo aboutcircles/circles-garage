@@ -2,13 +2,13 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export type BuilderRow = {
   handle: string;
-  reach: string;
+  reach_channel: "tg" | "fc" | "email";
+  reach_handle: string;
   circles_addr: string;
-  org_addr: string;
-  team: string[];
-  app_name: string;
-  track: string | null;
-  pitch: string | null;
+  org_addr: string | null;
+  signed_at: string | null;
+  signature: string | null;
+  nonce: string | null;
 };
 
 export type SubmissionRow = {
@@ -27,6 +27,7 @@ export type SubmissionRow = {
 };
 
 let _client: SupabaseClient | null = null;
+let _service: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient {
   if (_client) return _client;
@@ -39,4 +40,20 @@ export function getSupabase(): SupabaseClient {
   }
   _client = createClient(url, anonKey);
   return _client;
+}
+
+/** Server-only: uses SUPABASE_SERVICE_ROLE_KEY. Never import from a client module. */
+export function getServiceSupabase(): SupabaseClient {
+  if (_service) return _service;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    throw new Error(
+      "Missing Supabase service-role env vars. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in apps/web/.env.local.",
+    );
+  }
+  _service = createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return _service;
 }

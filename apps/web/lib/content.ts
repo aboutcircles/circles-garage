@@ -127,6 +127,8 @@ export type Me = {
 };
 
 // ── sign-up form ───────────────────────────────────────────────────
+// v0 shape — kept for the legacy signup-client.tsx which is being
+// rewritten in a follow-up phase. Do not extend; use SignupForm.
 export type SignupField = {
   name: string;
   label: string;
@@ -135,11 +137,32 @@ export type SignupField = {
   hint?: string;
 };
 
-export type SignupSection = {
+export type SignupSectionV0 = {
   num: string;
   label: string;
   hint: string;
   fields: readonly SignupField[];
+};
+
+/** @deprecated retained only for the legacy signup-client.tsx during the rewrite. */
+export type SignupFormV0 = {
+  sections: readonly SignupSectionV0[];
+  steps: readonly string[];
+  submit: string;
+  consent: string;
+  benefits: readonly string[];
+  benefitsMuted: readonly string[];
+  notice: SignupNotice;
+};
+
+// v1 shape — connect → you → review.
+// The form fields on step 02 are bespoke (segmented control, group
+// picker) so they are no longer enumerated here — the client renders
+// them directly. Copy lives below.
+export type SignupSection = {
+  num: string;
+  label: string;
+  hint: string;
 };
 
 export type SignupNotice = {
@@ -147,14 +170,64 @@ export type SignupNotice = {
   body: string;
 };
 
+export type SignupHeroCopy = {
+  title: string;
+  sub: string;
+};
+
+export type SignupConnectCopy = {
+  headline: string;
+  sub: string;
+  primary: string;
+  secondary: string;
+  noWallet: string;
+  gnosisAppUrl: string;
+  wrongChain: string;
+  notHuman: {
+    group: string;
+    organization: string;
+  };
+  noAvatar: string;
+};
+
+export type SignupReachChannel = "tg" | "fc" | "email";
+
+export type SignupReachOption = {
+  value: SignupReachChannel;
+  label: string;
+  placeholder: string;
+};
+
+export type SignupReachCopy = {
+  label: string;
+  hint: string;
+  channels: readonly SignupReachOption[];
+};
+
+export type SignupFieldCopy = {
+  label: string;
+  hint: string;
+};
+
+export type SignupOrgCopy = {
+  label: string;
+  hint: string;
+  skipLabel: string;
+};
+
 export type SignupForm = {
-  sections: readonly SignupSection[];
   steps: readonly string[];
+  sections: readonly SignupSection[];
+  hero: SignupHeroCopy;
   submit: string;
   consent: string;
   benefits: readonly string[];
   benefitsMuted: readonly string[];
   notice: SignupNotice;
+  connect: SignupConnectCopy;
+  reach: SignupReachCopy;
+  handle: SignupFieldCopy;
+  org: SignupOrgCopy;
 };
 
 // ── register mini-app draft ────────────────────────────────────────
@@ -352,78 +425,20 @@ export const content: Content = {
   },
 
   // ── sign-up form (labels live with the form, not the data) ─────
+  // v1 flow: connect → you → review. Step 02 form fields (handle,
+  // reach, org picker, consent) are bespoke components — they live in
+  // signup-client.tsx, not in this content blob.
   signup: {
+    steps: ["connect", "you", "review"],
     sections: [
-      {
-        num: "01",
-        label: "you",
-        hint: "3 fields, all required",
-        fields: [
-          {
-            name: "handle",
-            label: "handle",
-            required: true,
-            placeholder: "splits.eth",
-          },
-          {
-            name: "reach",
-            label: "reach",
-            required: true,
-            placeholder: "telegram / farcaster / email",
-          },
-          {
-            name: "circles_addr",
-            label: "circles addr (v2)",
-            required: true,
-            placeholder: "0x____________________________________",
-            hint: "we use this to pay you & verify org ownership",
-          },
-        ],
-      },
-      {
-        num: "02",
-        label: "your circle",
-        hint: "org you submit under",
-        fields: [
-          {
-            name: "org_addr",
-            label: "circles org address",
-            required: true,
-            placeholder: "0x____________________________________",
-          },
-          {
-            name: "team",
-            label: "team members",
-            placeholder: "0x…, 0x…, 0x…",
-            hint: "comma-separated CRC addresses",
-          },
-        ],
-      },
-      {
-        num: "03",
-        label: "the app · light touch",
-        hint: "you can add the rest later",
-        fields: [
-          {
-            name: "app_name",
-            label: "working name",
-            required: true,
-            placeholder: "pocket-mint",
-          },
-          {
-            name: "track",
-            label: "track",
-            placeholder: "payments | social | games | tools | other",
-          },
-          {
-            name: "pitch",
-            label: "one-line pitch",
-            placeholder: "what does it do in one breath",
-          },
-        ],
-      },
+      { num: "01", label: "connect", hint: "one wallet prompt" },
+      { num: "02", label: "you", hint: "handle, reach, optional org" },
+      { num: "03", label: "review", hint: "sign · create row" },
     ],
-    steps: ["you", "circle", "app", "review"],
+    hero: {
+      title: "who's shipping?",
+      sub: "One wallet prompt + one signature. No KYC. We use your Circles avatar to pay you.",
+    },
     submit: "sign & create →",
     consent:
       "I read the rules. The weekly snapshot is final. My handle & numbers can show on the public leaderboard.",
@@ -431,12 +446,49 @@ export const content: Content = {
       "builder page on the public leaderboard",
       "auto-pulled WAU + tx volume",
       "eligibility for ~€500/wk in xDAI",
-      "invite to the builder TG & wed call",
+      "invite to the wed builder call",
     ],
     benefitsMuted: ["co-marketing when top-3"],
     notice: {
       head: "no kyc · no fee",
-      body: "just keep your circles org sig & we're good.",
+      body: "your Circles avatar is your identity. one signature is enough.",
+    },
+    connect: {
+      headline: "connect your Circles avatar",
+      sub: "We read your avatar on Gnosis Chain to pre-fill your handle and list any groups you can submit under.",
+      primary: "connect browser wallet",
+      secondary: "connect with Gnosis app",
+      noWallet:
+        "no wallet detected · get a Circles avatar in the Gnosis app, then come back.",
+      gnosisAppUrl: "https://app.gnosis.io/circles",
+      wrongChain:
+        "switch your wallet to Gnosis Chain (chainId 100) and reconnect.",
+      notHuman: {
+        group:
+          "you're connected as a group avatar — reconnect with your personal wallet. garage is for builders, not orgs.",
+        organization:
+          "you're connected as an organization avatar — reconnect with your personal wallet.",
+      },
+      noAvatar:
+        "you don't have a Circles avatar yet. create one in the Gnosis app, then come back.",
+    },
+    reach: {
+      label: "where can we reach you?",
+      hint: "we'll DM you with the wed call link + prize details.",
+      channels: [
+        { value: "tg", label: "tg", placeholder: "@your_tg" },
+        { value: "fc", label: "fc", placeholder: "you.eth" },
+        { value: "email", label: "email", placeholder: "you@mail.com" },
+      ],
+    },
+    handle: {
+      label: "handle",
+      hint: "lowercase · 3-30 · letters digits . _ -",
+    },
+    org: {
+      label: "submit under",
+      hint: "pick a group you belong to, or skip — you can set this later.",
+      skipLabel: "— skip / set later —",
     },
   },
 

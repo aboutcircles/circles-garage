@@ -13,8 +13,6 @@ import {
   Steps,
   Textarea,
 } from "@workspace/ui/kit";
-import { getSupabase } from "@/lib/supabase";
-import { getCycleInfo } from "@/lib/cycle";
 import type { Draft } from "@/lib/content";
 
 type Contract = { chain: string; addr: string; label: string };
@@ -132,43 +130,50 @@ export function RegisterClient({ draft }: { draft: Draft }) {
   const submit = async () => {
     setStatus("submitting");
     setErr(null);
-    let client;
     try {
-      client = getSupabase();
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Supabase not configured.");
-      setStatus("err");
-      return;
-    }
-    const cleanedContracts = data.contracts
-      .map((c) => ({
-        chain: c.chain.trim(),
-        addr: c.addr.trim(),
-        label: c.label.trim(),
-      }))
-      .filter((c) => c.chain || c.addr || c.label);
-    const { error } = await client.from("submissions").insert({
-      app_name: data.app_name.trim(),
-      slug: (data.slug || slugify(data.app_name)).trim(),
-      pitch: data.pitch.trim(),
-      track: data.track || null,
-      status: "draft",
-      cycle: getCycleInfo().cycle,
-      contracts: cleanedContracts,
-      live_url: data.live_url.trim(),
-      repo_url: data.repo_url.trim() || null,
-      screenshots: [],
-      readme: data.readme,
-      measures: data.measures,
-    });
-    if (error) {
-      setErr(error.message);
-      setStatus("err");
-    } else {
+      const cleanedContracts = data.contracts
+        .map((c) => ({
+          chain: c.chain.trim(),
+          addr: c.addr.trim(),
+          label: c.label.trim(),
+        }))
+        .filter((c) => c.chain || c.addr || c.label);
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          app_name: data.app_name.trim(),
+          slug: (data.slug || slugify(data.app_name)).trim(),
+          pitch: data.pitch.trim(),
+          track: data.track || null,
+          status: "draft",
+          contracts: cleanedContracts,
+          live_url: data.live_url.trim(),
+          repo_url: data.repo_url.trim() || null,
+          screenshots: [],
+          readme: data.readme,
+          measures: data.measures,
+        }),
+      });
+      if (res.status === 401) {
+        setErr("Not signed in. Head to /signup first.");
+        setStatus("err");
+        return;
+      }
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null;
+        setErr(body?.error ?? `submission failed (HTTP ${res.status})`);
+        setStatus("err");
+        return;
+      }
       setStatus("ok");
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "network error");
+      setStatus("err");
     }
   };
 

@@ -1,13 +1,9 @@
 import { content } from "@/lib/content";
-import { Btn, Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
+import { Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
 import { SignupClient } from "./signup-client";
 
 export default function SignupPage() {
   const F = content.signup;
-  const requiredCount = F.sections.reduce(
-    (acc, s) => acc + s.fields.filter((f) => f.required).length,
-    0,
-  );
 
   return (
     <Page
@@ -17,23 +13,23 @@ export default function SignupPage() {
         <>
           <S k="form" v="signup.txt" />
           <SDot />
-          <S k="required *" v={`${requiredCount} fields`} />
-          <SDot />
           <S k="kyc" v="none" />
           <SDot />
-          <S k="time" v="~ 3 min" />
+          <S k="auth" v="circles avatar" />
+          <SDot />
+          <S k="time" v="~ 1 min" />
         </>
       }
       breadcrumb="welcome / signup"
     >
       <Grid cols="2fr 1fr" gap={12} fill>
-        <Pane title="signup · builder" hint="who's shipping?">
+        <Pane title="signup · builder" hint="connect · sign · in">
           <SignupClient form={F} />
         </Pane>
 
         <div
           className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto auto 1fr" }}
+          style={{ gridTemplateRows: "auto 1fr" }}
         >
           <Pane title="what you get" hint="benefits">
             <div className="font-mono text-xs leading-[1.9]">
@@ -45,13 +41,6 @@ export default function SignupPage() {
                   + {b}
                 </div>
               ))}
-            </div>
-          </Pane>
-
-          <Pane title="already in?" hint="sign in">
-            <div className="flex flex-col gap-2">
-              <Btn sm>connect wallet</Btn>
-              <Btn sm>sign in w/ email link</Btn>
             </div>
           </Pane>
 

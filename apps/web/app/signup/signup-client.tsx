@@ -1,110 +1,174 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { SiweMessage } from "siwe";
+import { Btn, Field, Hero, Input, Section } from "@workspace/ui/kit";
+import { cn } from "@workspace/ui/lib/utils";
+import type { Sdk } from "@aboutcircles/sdk";
+
+import type { SignupForm, SignupReachChannel } from "@/lib/content";
+import { type AvatarState } from "@/lib/circles";
 import {
-  Btn,
-  Field,
-  Hero,
-  Input,
-  Section,
-  Select,
-  Steps,
-  Textarea,
-} from "@workspace/ui/kit";
-import { getSupabase } from "@/lib/supabase";
-import type { SignupForm } from "@/lib/content";
+  ensureGnosis,
+  signEip191,
+  type ConnectedWallet,
+} from "@/lib/wallet";
+
+const SIGNUP_STATEMENT =
+  "circles/garage — sign in to register as a builder.";
+
+const ConnectCircles = dynamic(
+  () => import("./ConnectCircles").then((m) => m.ConnectCircles),
+  { ssr: false },
+);
+
+const OrgPicker = dynamic(
+  () => import("./OrgPicker").then((m) => m.OrgPicker),
+  { ssr: false },
+);
+
+type HumanAvatar = Extract<AvatarState, { kind: "human" }>;
+
+type Connected = {
+  wallet: ConnectedWallet;
+  avatar: HumanAvatar;
+  sdk: Sdk;
+};
 
 type FormState = {
   handle: string;
-  reach: string;
-  circles_addr: string;
-  org_addr: string;
-  team: string;
-  app_name: string;
-  track: string;
-  pitch: string;
+  reach_channel: SignupReachChannel;
+  reach_handle: string;
+  org_addr: `0x${string}` | null;
+  consent: boolean;
 };
 
-const STEP_REQUIRED: readonly (readonly (keyof FormState)[])[] = [
-  ["handle", "reach", "circles_addr"],
-  ["org_addr"],
-  ["app_name"],
-  [],
-];
-
-const TRACK_OPTIONS = [
-  { value: "payments", label: "payments" },
-  { value: "social", label: "social" },
-  { value: "games", label: "games" },
-  { value: "tools", label: "tools" },
-  { value: "other", label: "other" },
-] as const;
-
+const HANDLE_RE = /^[a-z0-9._-]{3,30}$/;
 const DISABLED_CLS = "disabled:opacity-40 disabled:cursor-not-allowed";
 
+function slugifyHandle(s: string): string {
+  return s
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^[-._]+|[-._]+$/g, "")
+    .slice(0, 30);
+}
+
+function shortAddr(a: string): string {
+  return `${a.slice(0, 6)}…${a.slice(-4)}`;
+}
+
 export function SignupClient({ form }: { form: SignupForm }) {
-  const [step, setStep] = useState(0);
+  const [connected, setConnected] = useState<Connected | null>(null);
   const [data, setData] = useState<FormState>({
     handle: "",
-    reach: "",
-    circles_addr: "",
-    org_addr: "",
-    team: "",
-    app_name: "",
-    track: "",
-    pitch: "",
+    reach_channel: "tg",
+    reach_handle: "",
+    org_addr: null,
+    consent: false,
   });
   const [status, setStatus] = useState<"idle" | "submitting" | "ok" | "err">(
     "idle",
   );
   const [err, setErr] = useState<string | null>(null);
 
-  const set = (n: keyof FormState) => (v: string) =>
-    setData((d) => ({ ...d, [n]: v }));
-
-  const required = STEP_REQUIRED[step] ?? [];
-  const canAdvance = required.every((n) => data[n].trim() !== "");
-  const isReview = step === form.steps.length - 1;
-
-  const next = () => {
-    if (canAdvance && step < form.steps.length - 1) setStep(step + 1);
+  const handleConnected = (result: Connected) => {
+    setConnected(result);
+    const prefill = slugifyHandle(result.avatar.name ?? "");
+    setData((d) => ({ ...d, handle: d.handle || prefill }));
   };
-  const back = () => {
-    if (step > 0) setStep(step - 1);
+
+  const reachChannel = useMemo(
+    () => form.reach.channels.find((c) => c.value === data.reach_channel),
+    [data.reach_channel, form.reach.channels],
+  );
+
+  const handleValid = HANDLE_RE.test(data.handle);
+  const reachValid = data.reach_handle.trim().length > 0;
+  const canSubmit =
+    connected !== null && handleValid && reachValid && data.consent;
+
+  const prefillFromAvatar = () => {
+    if (!connected) return;
+    const next = slugifyHandle(connected.avatar.name ?? "");
+    if (next) setData((d) => ({ ...d, handle: next }));
   };
 
   const submit = async () => {
+    if (!connected || !canSubmit) return;
     setStatus("submitting");
     setErr(null);
-    let client;
     try {
-      client = getSupabase();
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Supabase not configured.");
-      setStatus("err");
-      return;
-    }
-    const { error } = await client.from("builders").insert({
-      handle: data.handle.trim(),
-      reach: data.reach.trim(),
-      circles_addr: data.circles_addr.trim(),
-      org_addr: data.org_addr.trim(),
-      team: data.team
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      app_name: data.app_name.trim(),
-      track: data.track || null,
-      pitch: data.pitch.trim() || null,
-    });
-    if (error) {
-      setErr(error.message);
-      setStatus("err");
-    } else {
+      await ensureGnosis(connected.wallet.provider);
+
+      const nonceRes = await fetch("/api/signup/nonce", {
+        method: "GET",
+        credentials: "same-origin",
+      });
+      if (!nonceRes.ok) {
+        setErr("could not start signup — please retry.");
+        setStatus("err");
+        return;
+      }
+      const { nonce } = (await nonceRes.json()) as { nonce: string };
+
+      const message = new SiweMessage({
+        domain: window.location.host,
+        address: connected.wallet.address,
+        statement: SIGNUP_STATEMENT,
+        uri: window.location.origin,
+        version: "1",
+        chainId: 100,
+        nonce,
+        issuedAt: new Date().toISOString(),
+      }).prepareMessage();
+
+      const signature = await signEip191(
+        connected.wallet.provider,
+        connected.wallet.address,
+        message,
+      );
+
+      const postRes = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          address: connected.wallet.address,
+          signature,
+          message,
+          handle: data.handle.trim(),
+          reach_channel: data.reach_channel,
+          reach_handle: data.reach_handle.trim(),
+          org_addr: data.org_addr,
+        }),
+      });
+      if (postRes.status === 409) {
+        setErr("handle or address already taken — try another handle.");
+        setStatus("err");
+        return;
+      }
+      if (!postRes.ok) {
+        const body = (await postRes.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        if (body?.error === "handle-reserved") {
+          setErr("that handle is reserved — pick another.");
+        } else {
+          setErr(body?.error ?? `signup failed (HTTP ${postRes.status})`);
+        }
+        setStatus("err");
+        return;
+      }
       setStatus("ok");
       if (typeof window !== "undefined") {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "signature failed");
+      setStatus("err");
     }
   };
 
@@ -113,15 +177,14 @@ export function SignupClient({ form }: { form: SignupForm }) {
       <>
         <Hero
           size="lg"
-          sub={`row written · handle: ${data.handle} · we'll reach you via ${data.reach}.`}
+          sub={`row written · handle: ${data.handle} · we'll reach you via ${data.reach_channel}.`}
         >
           you&apos;re in.
         </Hero>
         <div className="mt-7 border-t border-hair pt-4 font-mono text-xs leading-[1.6] text-faint">
           {"// "}builders/{data.handle} — accepted into cycle queue.
           <br />
-          {"// "}next step: submit a mini-app under{" "}
-          {data.org_addr || "your org"}.
+          {"// "}next step: submit a mini-app.
         </div>
         <div className="mt-7 flex items-center gap-2.5">
           <Btn primary href="/register">
@@ -133,192 +196,187 @@ export function SignupClient({ form }: { form: SignupForm }) {
     );
   }
 
-  const section = form.sections[step];
-
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-5">
-        <Hero
-          size="lg"
-          sub="Three minutes. No KYC. We need to know where to send prize money and where to look up your numbers."
-        >
-          who&apos;s shipping?
-        </Hero>
-        <Steps all={form.steps} current={step} />
-      </div>
+      <Hero size="lg" sub={form.hero.sub}>
+        {form.hero.title}
+      </Hero>
 
-      <div className="mt-4 flex items-center gap-2.5 border-b border-hair pb-3">
-        <Btn
-          sm
-          onClick={back}
-          disabled={step === 0 || status === "submitting"}
-          className={DISABLED_CLS}
-        >
-          ← back
-        </Btn>
-        <span className="ml-auto font-mono text-[11px] text-faint">
-          step {step + 1}/{form.steps.length}
-          {isReview ? "" : ` · next → ${form.steps[step + 1]}`}
-        </span>
-        {!isReview && (
-          <Btn
-            sm
-            primary
-            onClick={next}
-            disabled={!canAdvance}
-            className={DISABLED_CLS}
-          >
-            next →
-          </Btn>
-        )}
-      </div>
-
-      {!isReview && section && (
-        <Section num={section.num} label={section.label} hint={section.hint}>
-          {section.fields.map((f) => {
-            if (f.name === "track") {
-              return (
-                <Select
-                  key={f.name}
-                  name={f.name}
-                  label={f.label}
-                  value={data.track}
-                  onChange={set("track")}
-                  options={TRACK_OPTIONS}
-                  placeholder={f.placeholder}
-                  required={f.required}
-                  hint={f.hint}
-                />
-              );
-            }
-            if (f.name === "pitch") {
-              return (
-                <Textarea
-                  key={f.name}
-                  name={f.name}
-                  label={f.label}
-                  value={data.pitch}
-                  onChange={set("pitch")}
-                  placeholder={f.placeholder}
-                  required={f.required}
-                  hint={f.hint}
-                  rows={2}
-                />
-              );
-            }
-            const fname = f.name as keyof FormState;
-            return (
-              <Input
-                key={f.name}
-                name={f.name}
-                label={f.label}
-                value={data[fname]}
-                onChange={set(fname)}
-                placeholder={f.placeholder}
-                required={f.required}
-                hint={f.hint}
-              />
-            );
-          })}
-        </Section>
-      )}
-
-      {isReview && (
-        <>
-          <div className="mt-7 border-2 border-ink p-4">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                  last step
-                </div>
-                <div className="font-mono text-[18px] font-bold leading-tight tracking-[-0.3px]">
-                  review &amp; submit
-                </div>
-                <div className="mt-2 font-mono text-[11px] leading-[1.55] text-faint">
-                  ↳ Check details below. Click submit to write a row to{" "}
-                  <code className="bg-ghost px-1">builders</code>.
-                </div>
-              </div>
-              <Btn
-                primary
-                onClick={submit}
-                disabled={status === "submitting"}
-                className={DISABLED_CLS}
-              >
-                {status === "submitting" ? "writing..." : form.submit}
-              </Btn>
+      <Section
+        num={form.sections[0]!.num}
+        label={form.sections[0]!.label}
+        hint={form.sections[0]!.hint}
+      >
+        {connected ? (
+          <div className="font-mono text-[13px] leading-[1.95]">
+            <div>
+              ✓ connected as{" "}
+              <span className="text-ink">
+                {shortAddr(connected.wallet.address)}
+              </span>{" "}
+              <span className="text-faint">
+                · {connected.wallet.kind === "injected" ? "browser" : "wc"}
+              </span>
             </div>
-            {err && (
-              <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px] text-ink">
-                ! {err}
+            {connected.avatar.name && (
+              <div className="text-faint">
+                ↳ welcome,{" "}
+                <span className="text-ink">{connected.avatar.name}</span>
               </div>
             )}
           </div>
+        ) : (
+          <ConnectCircles copy={form.connect} onConnected={handleConnected} />
+        )}
+      </Section>
 
-          {form.sections.map((sec) => (
-            <Section
-              key={sec.num}
-              num={sec.num}
-              label={sec.label}
-              hint={sec.hint}
+      {connected && (
+        <Section
+          num={form.sections[1]!.num}
+          label={form.sections[1]!.label}
+          hint={form.sections[1]!.hint}
+        >
+          <Input
+            name="handle"
+            label={form.handle.label}
+            value={data.handle}
+            onChange={(v) =>
+              setData((d) => ({ ...d, handle: v.toLowerCase() }))
+            }
+            placeholder="builder"
+            required
+            hint={
+              data.handle && !handleValid
+                ? `invalid · ${form.handle.hint}`
+                : form.handle.hint
+            }
+          />
+
+          {connected.avatar.name &&
+            data.handle !== slugifyHandle(connected.avatar.name) && (
+              <div className="-mt-1 ml-[232px] font-mono text-[11px] text-faint">
+                <button
+                  type="button"
+                  onClick={prefillFromAvatar}
+                  className="cursor-pointer underline decoration-dotted underline-offset-2 hover:text-ink"
+                >
+                  ↺ use avatar name ({slugifyHandle(connected.avatar.name)})
+                </button>
+              </div>
+            )}
+
+          <div className="border-b border-dotted border-hair py-2.5">
+            <div className="flex items-baseline gap-3 font-mono text-[13px]">
+              <span className="w-[220px] shrink-0 text-faint">
+                {form.reach.label}
+                <span className="text-ink"> *</span>:
+              </span>
+              <div className="flex flex-1 flex-wrap items-center gap-1.5">
+                {form.reach.channels.map((c) => {
+                  const on = c.value === data.reach_channel;
+                  return (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() =>
+                        setData((d) => ({
+                          ...d,
+                          reach_channel: c.value,
+                          reach_handle: "",
+                        }))
+                      }
+                      className={cn(
+                        "cursor-pointer border px-2.5 py-[3px] font-mono text-[11px] uppercase tracking-[0.04em]",
+                        on
+                          ? "border-ink bg-ink text-paper"
+                          : "border-ink bg-transparent text-ink",
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="mt-0.5 ml-[232px] font-mono text-[11px] text-faint">
+              ↳ {form.reach.hint}
+            </div>
+          </div>
+
+          <Input
+            name="reach_handle"
+            label={
+              reachChannel ? `${reachChannel.label} handle` : "reach handle"
+            }
+            value={data.reach_handle}
+            onChange={(v) => setData((d) => ({ ...d, reach_handle: v }))}
+            placeholder={reachChannel?.placeholder ?? ""}
+            required
+          />
+
+          <OrgPicker
+            sdk={connected.sdk}
+            address={connected.wallet.address}
+            copy={form.org}
+            value={data.org_addr}
+            onChange={(v) => setData((d) => ({ ...d, org_addr: v }))}
+          />
+
+          <Field
+            label="circles address"
+            required
+            value={connected.wallet.address}
+          />
+        </Section>
+      )}
+
+      {connected && (
+        <>
+          <label className="mt-7 flex cursor-pointer items-start gap-2.5 border-t border-hair pt-[18px] font-mono text-xs leading-[1.55]">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={data.consent}
+              onChange={(e) =>
+                setData((d) => ({ ...d, consent: e.target.checked }))
+              }
+            />
+            <span
+              className={cn(
+                "relative mt-[2px] inline-block h-3.5 w-3.5 shrink-0 border-[1.5px] border-ink",
+                data.consent ? "bg-ink" : "bg-transparent",
+              )}
             >
-              {sec.fields.map((f) => {
-                const v = data[f.name as keyof FormState];
-                return (
-                  <Field
-                    key={f.name}
-                    label={f.label}
-                    required={f.required}
-                    placeholder={f.placeholder}
-                    value={v || undefined}
-                    hint={f.hint}
-                  />
-                );
-              })}
-            </Section>
-          ))}
-          <div className="mt-7 border-t border-hair pt-[18px] font-mono text-xs leading-[1.55] text-faint">
-            [ ] {form.consent}
+              {data.consent && (
+                <span className="absolute top-[-4px] left-px text-[13px] font-bold text-paper">
+                  ✓
+                </span>
+              )}
+            </span>
+            <span className={cn(data.consent ? "text-ink" : "text-faint")}>
+              {form.consent}
+            </span>
+          </label>
+
+          {err && (
+            <div className="mt-4 font-mono text-[11px] text-ink">! {err}</div>
+          )}
+
+          <div className="mt-7 flex items-center gap-2.5">
+            <span className="font-mono text-[11px] text-faint">
+              one signature creates your builder row.
+            </span>
+            <Btn
+              primary
+              onClick={submit}
+              disabled={!canSubmit || status === "submitting"}
+              className={cn("ml-auto", DISABLED_CLS)}
+            >
+              {status === "submitting" ? "signing..." : form.submit}
+            </Btn>
           </div>
         </>
       )}
-
-      {err && (
-        <div className="mt-4 font-mono text-[11px] text-ink">! {err}</div>
-      )}
-
-      <div className="mt-4 flex items-center gap-2.5">
-        <Btn
-          onClick={back}
-          disabled={step === 0 || status === "submitting"}
-          className={DISABLED_CLS}
-        >
-          ← back
-        </Btn>
-        <span className="ml-auto font-mono text-[11px] text-faint">
-          step {step + 1}/{form.steps.length}
-          {isReview ? "" : ` · next → ${form.steps[step + 1]}`}
-        </span>
-        {!isReview ? (
-          <Btn
-            primary
-            onClick={next}
-            disabled={!canAdvance}
-            className={DISABLED_CLS}
-          >
-            next →
-          </Btn>
-        ) : (
-          <Btn
-            primary
-            onClick={submit}
-            disabled={status === "submitting"}
-            className={DISABLED_CLS}
-          >
-            {status === "submitting" ? "writing..." : form.submit}
-          </Btn>
-        )}
-      </div>
     </>
   );
 }

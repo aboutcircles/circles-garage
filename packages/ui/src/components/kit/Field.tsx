@@ -24,14 +24,14 @@ export function Field({
 
   return (
     <div className="border-b border-dotted border-hair py-2.5">
-      <div className="flex items-baseline gap-3 font-mono text-[13px]">
-        <span className="w-[220px] shrink-0 text-faint">
+      <div className="flex flex-col font-mono text-[13px] sm:flex-row sm:items-baseline sm:gap-3">
+        <span className="text-faint sm:w-[220px] sm:shrink-0">
           {label}
           {required && <span className="text-ink"> *</span>}:
         </span>
         <span
           className={cn(
-            "flex-1",
+            "min-w-0 break-words sm:flex-1",
             hasValue ? "not-italic text-ink" : "italic text-faint",
           )}
         >
@@ -39,7 +39,7 @@ export function Field({
         </span>
       </div>
       {hint && (
-        <div className="mt-0.5 ml-[232px] font-mono text-[11px] text-faint">
+        <div className="mt-0.5 font-mono text-[11px] text-faint sm:ml-[232px]">
           ↳ {hint}
         </div>
       )}

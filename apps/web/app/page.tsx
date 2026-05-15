@@ -241,7 +241,7 @@ export default async function LandingPage() {
                 <div
                   key={c.k}
                   className={
-                    "grid items-baseline py-2" +
+                    "grid items-baseline gap-x-3 py-2" +
                     (i < a.length - 1
                       ? " border-b border-dotted border-hair"
                       : "")

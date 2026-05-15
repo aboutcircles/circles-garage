@@ -1,1 +1,7 @@
 pnpm check
+
+# Optional per-clone hook (untracked, lives in .git/hooks/). Use it for
+# local-only checks you don't want to publish (e.g. personal-info scans).
+if [ -x .git/hooks/pre-commit-local ]; then
+  .git/hooks/pre-commit-local
+fi

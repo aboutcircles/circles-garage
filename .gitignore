@@ -28,6 +28,7 @@ build
 dist
 
 .claude
+.context
 # Debug
 npm-debug.log*
 

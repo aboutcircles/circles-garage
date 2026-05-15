@@ -252,7 +252,7 @@ export const content: Content = {
   landing: {
     kicker: "// builder program · cycle 01 · open call · live now",
     headline: ["Get paid to ship", "mini-apps on Circles."],
-    sub: "Cycle 01 is open. 7-day cycles · auto-snapshot every Sunday 23:59 CET · €500 weekly pool paid Monday morning. ⅔ to the apps moving WAU. ⅓ to the apps that keep showing up. No decks, no rounds, no gatekeepers.",
+    sub: "Cycle 01 is open. 7-day cycles · auto-snapshot every Sunday 23:59 CET · €500 weekly pool paid Monday morning. No decks, no rounds, no gatekeepers.",
     ctaPrimary: "sign up →",
     ctaSecondary: "submit a mini-app →",
     steps: [

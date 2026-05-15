@@ -223,7 +223,7 @@ export const content: Content = {
   // we have a clock running.)
   program: {
     name: "circles/garage",
-    domain: "builder.circles.garage",
+    domain: "garage.aboutcircles.com",
     cycle: 1,
     pool: "€500.00", // weekly pool, in xDAI
     payoutDay: "Mon",

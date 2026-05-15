@@ -253,7 +253,7 @@ export function RegisterClient({ draft }: { draft: Draft }) {
             value={data.slug}
             onChange={setSlug}
             placeholder={draft.slug}
-            hint={`builder.circles.garage/p/${data.slug || slugify(data.app_name) || "________"}`}
+            hint={`garage.aboutcircles.com/p/${data.slug || slugify(data.app_name) || "________"}`}
           />
           <Textarea
             name="pitch"
@@ -485,7 +485,7 @@ export function RegisterClient({ draft }: { draft: Draft }) {
             <Field
               label="slug"
               value={data.slug || slugify(data.app_name) || undefined}
-              hint={`builder.circles.garage/p/${data.slug || slugify(data.app_name) || "________"}`}
+              hint={`garage.aboutcircles.com/p/${data.slug || slugify(data.app_name) || "________"}`}
             />
             <Field
               label="one-line pitch"

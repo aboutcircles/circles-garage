@@ -11,7 +11,7 @@ import {
   Steps,
   Textarea,
 } from "@workspace/ui/kit";
-import { getSupabase } from "@/lib/supabase";
+import { createBuilder } from "./actions";
 import type { SignupForm } from "@/lib/content";
 
 type FormState = {
@@ -42,10 +42,16 @@ const TRACK_OPTIONS = [
 
 const DISABLED_CLS = "disabled:opacity-40 disabled:cursor-not-allowed";
 
-export function SignupClient({ form }: { form: SignupForm }) {
+export function SignupClient({
+  form,
+  githubLogin = "",
+}: {
+  form: SignupForm;
+  githubLogin?: string;
+}) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormState>({
-    handle: "",
+    handle: githubLogin,
     reach: "",
     circles_addr: "",
     org_addr: "",
@@ -76,15 +82,7 @@ export function SignupClient({ form }: { form: SignupForm }) {
   const submit = async () => {
     setStatus("submitting");
     setErr(null);
-    let client;
-    try {
-      client = getSupabase();
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Supabase not configured.");
-      setStatus("err");
-      return;
-    }
-    const { error } = await client.from("builders").insert({
+    const result = await createBuilder({
       handle: data.handle.trim(),
       reach: data.reach.trim(),
       circles_addr: data.circles_addr.trim(),
@@ -97,14 +95,14 @@ export function SignupClient({ form }: { form: SignupForm }) {
       track: data.track || null,
       pitch: data.pitch.trim() || null,
     });
-    if (error) {
-      setErr(error.message);
+    if (!result.ok) {
+      setErr(result.message);
       setStatus("err");
-    } else {
-      setStatus("ok");
-      if (typeof window !== "undefined") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
+      return;
+    }
+    setStatus("ok");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -113,7 +111,7 @@ export function SignupClient({ form }: { form: SignupForm }) {
       <>
         <Hero
           size="lg"
-          sub={`row written · handle: ${data.handle} · we'll reach you via ${data.reach}.`}
+          sub={`handle: ${data.handle} · we'll reach you via ${data.reach}.`}
         >
           you&apos;re in.
         </Hero>
@@ -140,7 +138,7 @@ export function SignupClient({ form }: { form: SignupForm }) {
       <div className="flex flex-wrap items-end justify-between gap-5">
         <Hero
           size="lg"
-          sub="Three minutes. No KYC. We need to know where to send prize money and where to look up your numbers."
+          sub="Three minutes. We need to know where to send prize money and where to look up your numbers."
         >
           who&apos;s shipping?
         </Hero>

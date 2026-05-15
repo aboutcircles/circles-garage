@@ -256,7 +256,7 @@ export const content: Content = {
     ctaPrimary: "sign up →",
     ctaSecondary: "submit a mini-app →",
     steps: [
-      ["i.", "sign up", "handle · org · contact. 3 fields, no kyc."],
+      ["i.", "sign up", "handle · org · contact. 3 fields."],
       [
         "ii.",
         "submit a mini-app",
@@ -367,13 +367,13 @@ export const content: Content = {
           },
           {
             name: "reach",
-            label: "reach",
+            label: "telegram id",
             required: true,
-            placeholder: "telegram / farcaster / email",
+            placeholder: "@yourhandle",
           },
           {
             name: "circles_addr",
-            label: "circles addr (v2)",
+            label: "circles profile address",
             required: true,
             placeholder: "0x____________________________________",
             hint: "we use this to pay you & verify org ownership",
@@ -424,7 +424,7 @@ export const content: Content = {
       },
     ],
     steps: ["you", "circle", "app", "review"],
-    submit: "sign & create →",
+    submit: "create →",
     consent:
       "I read the rules. The weekly snapshot is final. My handle & numbers can show on the public leaderboard.",
     benefits: [
@@ -435,7 +435,7 @@ export const content: Content = {
     ],
     benefitsMuted: ["co-marketing when top-3"],
     notice: {
-      head: "no kyc · no fee",
+      head: "no fee",
       body: "just keep your circles org sig & we're good.",
     },
   },

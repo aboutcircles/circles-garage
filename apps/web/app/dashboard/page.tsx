@@ -1,221 +1,254 @@
-import { content } from "@/lib/content";
-import type { App } from "@/lib/content";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { getCycleInfo } from "@/lib/cycle";
+import { LiveCountdown } from "@/components/live-countdown";
+import { SignInPrompt } from "@/components/sign-in-prompt";
+import { UserBadge } from "@/components/user-badge";
 import {
   Btn,
+  Field,
   Grid,
   Hero,
   Page,
   Pane,
+  Pill,
   S,
   SDot,
-  StatStrip,
+  Section,
 } from "@workspace/ui/kit";
 
-export default function DashboardPage() {
-  const me = content.me;
-  const p = content.program;
+type BuilderRow = {
+  handle: string;
+  reach: string;
+  circles_addr: string;
+  org_addr: string;
+  team: string[] | null;
+  app_name: string;
+  track: string | null;
+  pitch: string | null;
+  github_login: string | null;
+};
 
-  const liveApps = me.apps.filter((a) => a.status === "LIVE");
-  const draftApps = me.apps.filter((a) => a.status === "DRAFT");
-  const openTodos = me.todos.filter((t) => !t.done);
+type SubmissionRow = {
+  id: string;
+  app_name: string;
+  slug: string;
+  pitch: string;
+  track: string | null;
+  status: string;
+  cycle: number;
+  live_url: string;
+  repo_url: string | null;
+  created_at: string;
+};
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  const cycleInfo = getCycleInfo();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <Page
+        screen="03 Dashboard"
+        scroll
+        status={
+          <>
+            <S k="cycle" v={cycleInfo.cycleLabel} accent />
+            <SDot />
+            <S
+              k="snapshot"
+              v={<LiveCountdown targetMs={cycleInfo.endsAtMs} />}
+              accent
+            />
+          </>
+        }
+        breadcrumb="dashboard · signed-out"
+      >
+        <Grid cols={1} gap={12} fill>
+          <Pane title="dashboard" hint="builder home">
+            <SignInPrompt intent="dashboard" next="/dashboard" />
+          </Pane>
+        </Grid>
+      </Page>
+    );
+  }
+
+  const githubLogin =
+    (user.user_metadata?.user_name as string | undefined) ?? "you";
+
+  const { data: builder } = await supabase
+    .from("builders")
+    .select(
+      "handle,reach,circles_addr,org_addr,team,app_name,track,pitch,github_login",
+    )
+    .eq("user_id", user.id)
+    .maybeSingle<BuilderRow>();
+
+  if (!builder) redirect("/signup");
+
+  const { data: submissionsData } = await supabase
+    .from("submissions")
+    .select(
+      "id,app_name,slug,pitch,track,status,cycle,live_url,repo_url,created_at",
+    )
+    .eq("user_id", user.id)
+    .order("cycle", { ascending: false })
+    .order("created_at", { ascending: false });
+
+  const submissions = (submissionsData ?? []) as SubmissionRow[];
+  const currentCycleSubs = submissions.filter((s) => s.cycle === cycleInfo.cycle);
+  const pastSubs = submissions.filter((s) => s.cycle !== cycleInfo.cycle);
+  const hasCurrent = currentCycleSubs.length > 0;
 
   return (
     <Page
       screen="03 Dashboard"
+      scroll
       status={
         <>
-          <S k="you" v={me.handle} accent />
+          <S k="you" v={`@${githubLogin}`} accent />
           <SDot />
-          <S k="rank" v={"#" + String(me.rank).padStart(2, "0")} accent />
+          <S k="cycle" v={cycleInfo.cycleLabel} accent />
           <SDot />
-          <S k="payout" v={me.projectedPayout} accent />
-          <SDot />
-          <S k="snapshot" v={p.snapshotIn} />
+          <S
+            k="snapshot"
+            v={<LiveCountdown targetMs={cycleInfo.endsAtMs} />}
+            accent
+          />
+          <UserBadge />
         </>
       }
-      breadcrumb={`signed-in · ${me.address} · org: ${me.org}`}
+      breadcrumb={`signed-in · @${githubLogin} · org: ${builder.org_addr}`}
     >
-      <Grid cols="1.4fr 1fr" rows="auto auto 1fr" gap={12} fill>
-        {/* hero (full width) */}
-        <Pane
-          title="dashboard"
-          hint={`cycle ${p.cycle} · welcome back`}
-          span={2}
-        >
+      <Grid cols="1.4fr 1fr" gap={12} fill>
+        <Pane title="dashboard" hint={`cycle ${cycleInfo.cycleLabel}`} span={2}>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <Hero
               size="md"
-              sub={`Cycle ${p.cycle} snapshot in ${p.snapshotIn}. Keep moving.`}
+              sub={
+                hasCurrent
+                  ? `you've submitted for cycle ${cycleInfo.cycleLabel}. snapshot fires in ${cycleInfo.countdownLabel}.`
+                  : `cycle ${cycleInfo.cycleLabel} closes in ${cycleInfo.countdownLabel} · submit a mini-app to be eligible.`
+              }
             >
-              hello, {me.handle}.
+              hello, @{githubLogin}.
             </Hero>
             <div className="flex gap-2">
-              <Btn sm>edit profile</Btn>
-              <Btn sm primary href="/register">
-                + submit mini-app
-              </Btn>
+              {!hasCurrent && (
+                <Btn primary href="/register">
+                  + submit mini-app
+                </Btn>
+              )}
+              <Btn href="/leaderboard">leaderboard</Btn>
             </div>
-          </div>
-          <div className="mt-4">
-            <StatStrip
-              items={[
-                {
-                  k: "rank · this week",
-                  v: "#" + String(me.rank).padStart(2, "0"),
-                  d: `was #${String(me.rankPrev).padStart(2, "0")} last week`,
-                },
-                {
-                  k: "new minters · 7d",
-                  v: me.newMinters7d,
-                  d: `across ${liveApps.length} apps`,
-                },
-                {
-                  k: "projected payout",
-                  v: me.projectedPayout,
-                  d: `incl. ${me.streakBonus} streak bonus`,
-                },
-                {
-                  k: "circle of life",
-                  v: `${me.coLifeWeeks} wks`,
-                  d: "don't break it",
-                },
-              ]}
-            />
           </div>
         </Pane>
 
-        {/* mini-apps (left, spans 2 rows) */}
         <Pane
-          title="your mini-apps"
-          hint={`${liveApps.length} live · ${draftApps.length} draft`}
-          rowSpan={2}
+          title="your submissions"
+          hint={
+            submissions.length === 0
+              ? "none yet"
+              : `${submissions.length} total · ${currentCycleSubs.length} this cycle`
+          }
         >
-          {me.apps.map((a) => (
-            <AppRow key={a.name} app={a} />
-          ))}
-          <div className="mt-3.5 flex items-center gap-3">
-            <Btn sm>+ register another</Btn>
-            <span className="font-mono text-[11px] text-faint">
-              3 mini-apps max per org
-            </span>
-          </div>
-        </Pane>
-
-        {/* right: pool */}
-        <Pane title={`pool · cycle ${p.cycle}`} hint="your share">
-          <div className="font-mono text-[30px] font-bold tracking-[-0.8px]">
-            {me.projectedPayout}
-          </div>
-          <div className="mt-2.5 flex h-5 border border-ink font-mono text-[10px]">
-            <div
-              className="flex items-center bg-ink px-2 text-paper"
-              style={{ width: "66.6%" }}
-            >
-              ⅔ winners · {p.poolSplit.winnersAmt}
+          {submissions.length === 0 ? (
+            <div className="py-6 font-mono text-[13px] leading-[1.7]">
+              <div className="text-faint">
+                nothing submitted yet. submit your first mini-app to be eligible
+                for cycle {cycleInfo.cycleLabel}.
+              </div>
+              <div className="mt-4">
+                <Btn primary href="/register">
+                  + submit mini-app
+                </Btn>
+              </div>
             </div>
-            <div className="flex flex-1 items-center px-2">⅓ life</div>
-          </div>
-          <div className="mt-2.5 font-mono text-[11px] leading-[1.6] text-faint">
-            ~ {me.projectedPayout} = your projected share
-            <br />
-            {me.streakBonus} streak bonus ({me.coLifeWeeks}w)
-          </div>
-        </Pane>
-
-        {/* right: activity + todo */}
-        <Grid cols={2} gap={12}>
-          <Pane title="activity" hint="tail -f">
-            <div className="font-mono text-xs leading-[1.85]">
-              {me.activity.map((a, i) => (
-                <div key={i}>
-                  <span className="mr-2 text-faint">{a.t}</span>
-                  {a.body}
-                </div>
-              ))}
-            </div>
-          </Pane>
-
-          <Pane title="todo" hint={`${openTodos.length} open`}>
-            <div className="font-mono text-[13px] leading-[2]">
-              {me.todos.map((t, i) => (
-                <div
-                  key={i}
-                  className={
-                    "flex justify-between gap-2 " +
-                    (t.done ? "text-faint line-through" : "text-ink")
-                  }
+          ) : (
+            <>
+              {currentCycleSubs.length > 0 && (
+                <Section
+                  num="01"
+                  label={`cycle ${cycleInfo.cycleLabel}`}
+                  hint="this cycle"
                 >
-                  <span>
-                    [{t.done ? "x" : " "}] {t.body}
-                  </span>
-                  {t.hint && (
-                    <span className="text-[11px] text-faint">· {t.hint}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Pane>
-        </Grid>
+                  {currentCycleSubs.map((s) => (
+                    <SubmissionRowView key={s.id} sub={s} />
+                  ))}
+                </Section>
+              )}
+              {pastSubs.length > 0 && (
+                <Section num="02" label="past cycles" hint="archive">
+                  {pastSubs.map((s) => (
+                    <SubmissionRowView key={s.id} sub={s} />
+                  ))}
+                </Section>
+              )}
+            </>
+          )}
+        </Pane>
+
+        <Pane title="your builder profile" hint="from signup">
+          <Field label="handle" value={builder.handle} />
+          <Field label="reach" value={builder.reach} />
+          <Field label="circles addr" value={builder.circles_addr} />
+          <Field label="org addr" value={builder.org_addr} />
+          {builder.team && builder.team.length > 0 && (
+            <Field label="team" value={builder.team.join(", ")} />
+          )}
+          <Field label="app name" value={builder.app_name} />
+          {builder.track && <Field label="track" value={builder.track} />}
+          {builder.pitch && <Field label="pitch" value={builder.pitch} />}
+        </Pane>
       </Grid>
     </Page>
   );
 }
 
-function AppRow({ app }: { app: App }) {
-  const chart = app.chart;
-  const hasChart = chart.length > 0;
-  const max = hasChart ? Math.max(...chart, 1) : 1;
-
+function SubmissionRowView({ sub }: { sub: SubmissionRow }) {
   return (
-    <div
-      className="grid items-center gap-4 border-b border-dotted border-hair py-3"
-      style={{
-        gridTemplateColumns: "1.4fr 80px auto",
-        opacity: app.muted ? 0.55 : 1,
-      }}
-    >
-      <div>
-        <div className="font-mono text-base font-bold tracking-[-0.3px]">
-          {app.name}
-          <span className="ml-2 text-[10px] font-normal text-faint">
-            [{app.status}]
-          </span>
-        </div>
-        <div className="mt-1 max-w-[360px] text-xs text-faint">{app.line}</div>
-        <div className="mt-1.5 text-[11px] text-faint">
-          WAU {app.wau} · {app.vol} · streak {app.streak}
-        </div>
+    <div className="grid items-start gap-3 border-b border-dotted border-hair py-3 last:border-b-0">
+      <div className="flex flex-wrap items-baseline gap-2">
+        <span className="font-mono text-base font-bold tracking-[-0.3px]">
+          {sub.app_name}
+        </span>
+        <span className="font-mono text-[11px] text-faint">/{sub.slug}</span>
+        <Pill className="ml-auto">{sub.status}</Pill>
       </div>
-      <div>
-        {hasChart ? (
-          <svg
-            width="80"
-            height="32"
-            viewBox={`0 0 ${chart.length * 8} 32`}
-            preserveAspectRatio="none"
-          >
-            {chart.map((v, i) => (
-              <rect
-                key={i}
-                x={i * 8 + 1}
-                y={30 - (v / max) * 26}
-                width="5"
-                height={(v / max) * 26}
-                fill="var(--ink)"
-              />
-            ))}
-          </svg>
-        ) : (
-          <div className="flex h-8 w-20 items-center justify-center border border-dashed border-hair font-mono text-[9px] text-faint">
-            NO DATA
-          </div>
+      <div className="font-mono text-xs text-faint">{sub.pitch}</div>
+      <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-faint">
+        <span>cycle {String(sub.cycle).padStart(2, "0")}</span>
+        {sub.track && (
+          <>
+            <span>·</span>
+            <span>{sub.track}</span>
+          </>
         )}
-      </div>
-      <div className="flex gap-1.5">
-        <Btn sm>open</Btn>
-        <Btn sm ghost>
-          edit
-        </Btn>
+        <span>·</span>
+        <a
+          href={sub.live_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="border-b border-ink text-ink hover:bg-ghost"
+        >
+          live ↗
+        </a>
+        {sub.repo_url && (
+          <>
+            <span>·</span>
+            <a
+              href={sub.repo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-b border-ink text-ink hover:bg-ghost"
+            >
+              repo ↗
+            </a>
+          </>
+        )}
       </div>
     </div>
   );

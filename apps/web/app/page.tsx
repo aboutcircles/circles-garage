@@ -1,7 +1,10 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
 import { getCycleInfo } from "@/lib/cycle";
-import { getSupabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { LiveCountdown } from "@/components/live-countdown";
+import { SignInWithGitHub } from "@/components/sign-in-with-github";
+import { UserBadge } from "@/components/user-badge";
 import {
   Btn,
   Grid,
@@ -14,16 +17,12 @@ import {
   Table,
 } from "@workspace/ui/kit";
 
-// Re-render every 15 seconds. The countdown ticks client-side at minute
-// precision via <LiveCountdown>; this revalidate is so the cycle number
-// and live row counts refresh too.
-export const revalidate = 15;
-
 type LiveCounters = { builders: number; submissions: number };
 
-async function fetchLiveCounters(): Promise<LiveCounters | null> {
+async function fetchLiveCounters(
+  supabase: SupabaseClient,
+): Promise<LiveCounters | null> {
   try {
-    const supabase = getSupabase();
     const { data, error } = await supabase.rpc("get_landing_counters");
     if (error || !Array.isArray(data) || data.length === 0) return null;
     const row = data[0] as {
@@ -45,7 +44,12 @@ export default async function LandingPage() {
   const cycleInfo = getCycleInfo();
   const cycle = cycleInfo.cycleLabel;
   const lbCount = content.leaderboard.length;
-  const live = await fetchLiveCounters();
+  const supabase = await createClient();
+  const [live, authResult] = await Promise.all([
+    fetchLiveCounters(supabase),
+    supabase.auth.getUser(),
+  ]);
+  const signedIn = !!authResult.data.user;
   const counters = content.counters.map((c) => {
     if (live && c.k === "builders signed") return { ...c, v: String(live.builders) };
     if (live && c.k === "mini-apps submitted")
@@ -72,6 +76,7 @@ export default async function LandingPage() {
           />
           <SDot />
           <span><span className="text-ember mr-1">●</span>live</span>
+          <UserBadge />
         </>
       }
       breadcrumb="welcome · open call · public"
@@ -88,15 +93,29 @@ export default async function LandingPage() {
             size="xl"
             sub={L.sub}
             ctas={
-              <>
-                <Btn ember href="/signup">
-                  {L.ctaPrimary}
-                </Btn>
-                <Btn href="/register">{L.ctaSecondary}</Btn>
-                <Btn ghost href="/leaderboard">
-                  see leaderboard
-                </Btn>
-              </>
+              signedIn ? (
+                <>
+                  <Btn ember href="/dashboard">
+                    → dashboard
+                  </Btn>
+                  <Btn href="/register">{L.ctaSecondary}</Btn>
+                  <Btn ghost href="/leaderboard">
+                    see leaderboard
+                  </Btn>
+                </>
+              ) : (
+                <>
+                  <SignInWithGitHub
+                    next="/dashboard"
+                    label="sign in with github →"
+                    ember
+                  />
+                  <Btn href="/register">{L.ctaSecondary}</Btn>
+                  <Btn ghost href="/leaderboard">
+                    see leaderboard
+                  </Btn>
+                </>
+              )
             }
           >
             {L.headline.join(" ")}

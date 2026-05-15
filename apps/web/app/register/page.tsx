@@ -1,16 +1,36 @@
 import { content } from "@/lib/content";
 import { getCycleInfo } from "@/lib/cycle";
 import { LiveCountdown } from "@/components/live-countdown";
-import { Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
+import { SignInPrompt } from "@/components/sign-in-prompt";
+import { UserBadge } from "@/components/user-badge";
+import { createClient } from "@/lib/supabase/server";
+import { Btn, Grid, Hero, Page, Pane, S, SDot } from "@workspace/ui/kit";
 import { RegisterClient } from "./register-client";
 
-// Re-render every minute so the cycle number / end-date refresh, even
-// though the countdown itself ticks client-side.
-export const revalidate = 60;
-
-export default function RegisterPage() {
+export default async function RegisterPage() {
   const d = content.draft;
   const cycleInfo = getCycleInfo();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let existingSubmission: {
+    app_name: string;
+    slug: string;
+    live_url: string;
+  } | null = null;
+
+  if (user) {
+    const { data } = await supabase
+      .from("submissions")
+      .select("app_name, slug, live_url")
+      .eq("user_id", user.id)
+      .eq("cycle", cycleInfo.cycle)
+      .maybeSingle();
+    existingSubmission = data ?? null;
+  }
 
   return (
     <Page
@@ -27,13 +47,39 @@ export default function RegisterPage() {
             v={<LiveCountdown targetMs={cycleInfo.endsAtMs} />}
             accent
           />
+          <UserBadge />
         </>
       }
       breadcrumb="dashboard / mini-apps / new submission"
     >
       <Grid cols="2fr 1fr" gap={12} fill>
         <Pane title="submit mini-app · drop the goods" hint="5 steps">
-          <RegisterClient draft={d} />
+          {!user ? (
+            <SignInPrompt intent="submit" next="/register" />
+          ) : existingSubmission ? (
+            <>
+              <Hero
+                size="lg"
+                sub={`you've already submitted for cycle ${cycleInfo.cycleLabel}. one app per cycle — edit or resubmit lands in the next snapshot.`}
+              >
+                you&apos;re in.
+              </Hero>
+              <div className="mt-7 border-t border-hair pt-4 font-mono text-xs leading-[1.6] text-faint">
+                {"// "}submissions/{existingSubmission.slug} ·{" "}
+                {existingSubmission.app_name}
+                <br />
+                {"// "}live → {existingSubmission.live_url}
+              </div>
+              <div className="mt-7 flex items-center gap-2.5">
+                <Btn primary href="/dashboard">
+                  → dashboard
+                </Btn>
+                <Btn href="/leaderboard">see leaderboard</Btn>
+              </div>
+            </>
+          ) : (
+            <RegisterClient draft={d} />
+          )}
         </Pane>
 
         <div

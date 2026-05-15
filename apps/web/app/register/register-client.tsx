@@ -13,8 +13,7 @@ import {
   Steps,
   Textarea,
 } from "@workspace/ui/kit";
-import { getSupabase } from "@/lib/supabase";
-import { getCycleInfo } from "@/lib/cycle";
+import { createSubmission } from "./actions";
 import type { Draft } from "@/lib/content";
 
 type Contract = { chain: string; addr: string; label: string };
@@ -132,14 +131,6 @@ export function RegisterClient({ draft }: { draft: Draft }) {
   const submit = async () => {
     setStatus("submitting");
     setErr(null);
-    let client;
-    try {
-      client = getSupabase();
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Supabase not configured.");
-      setStatus("err");
-      return;
-    }
     const cleanedContracts = data.contracts
       .map((c) => ({
         chain: c.chain.trim(),
@@ -147,28 +138,25 @@ export function RegisterClient({ draft }: { draft: Draft }) {
         label: c.label.trim(),
       }))
       .filter((c) => c.chain || c.addr || c.label);
-    const { error } = await client.from("submissions").insert({
+    const result = await createSubmission({
       app_name: data.app_name.trim(),
       slug: (data.slug || slugify(data.app_name)).trim(),
       pitch: data.pitch.trim(),
       track: data.track || null,
-      status: "draft",
-      cycle: getCycleInfo().cycle,
       contracts: cleanedContracts,
       live_url: data.live_url.trim(),
       repo_url: data.repo_url.trim() || null,
-      screenshots: [],
       readme: data.readme,
       measures: data.measures,
     });
-    if (error) {
-      setErr(error.message);
+    if (!result.ok) {
+      setErr(result.message);
       setStatus("err");
-    } else {
-      setStatus("ok");
-      if (typeof window !== "undefined") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
+      return;
+    }
+    setStatus("ok");
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -177,7 +165,7 @@ export function RegisterClient({ draft }: { draft: Draft }) {
       <>
         <Hero
           size="lg"
-          sub={`row written · ${data.app_name} queued. measurement starts at the next snapshot.`}
+          sub={`${data.app_name} queued. measurement starts at the next snapshot.`}
         >
           submitted.
         </Hero>

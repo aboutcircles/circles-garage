@@ -226,7 +226,7 @@ export const content: Content = {
       {
         text: "builder telegram",
         hrefLabel: "join the group",
-        href: "https://t.me/c/about_circles/499",
+        href: "https://t.me/about_circles/499",
       },
       {
         text: "office hours · schedule TBD",
@@ -235,7 +235,7 @@ export const content: Content = {
       {
         text: "stuck? reach the team",
         hrefLabel: "→ telegram",
-        href: "https://t.me/c/about_circles/499",
+        href: "https://t.me/about_circles/499",
       },
     ],
   },

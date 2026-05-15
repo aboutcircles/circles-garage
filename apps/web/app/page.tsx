@@ -99,9 +99,7 @@ export default async function LandingPage() {
               </>
             }
           >
-            {L.headline[0]}
-            <br />
-            {L.headline[1]}
+            {L.headline.join(" ")}
           </Hero>
         </Pane>
 

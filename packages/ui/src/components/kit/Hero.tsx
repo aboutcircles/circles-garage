@@ -39,7 +39,7 @@ export function Hero({
       )}
       <h1
         className={cn(
-          "font-mono font-bold leading-[1.02] tracking-[-1.3px]",
+          "font-mono font-bold leading-[1.02] tracking-[-1.3px] text-balance",
           SIZE_CLASSES[size],
         )}
       >

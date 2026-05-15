@@ -75,7 +75,7 @@ export default async function RegisterPage() {
 
         <div
           className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto 1fr" }}
+          style={{ gridTemplateRows: "auto auto 1fr" }}
         >
           <Pane title="how we judge" hint="holistic · per cycle">
             <div className="font-mono text-xs leading-[1.7]">
@@ -87,6 +87,22 @@ export default async function RegisterPage() {
                   <div className="text-faint">↳ {j.body}</div>
                 </div>
               ))}
+            </div>
+          </Pane>
+
+          <Pane title="docs · for builders" hint="miniapps">
+            <div className="font-mono text-xs leading-[1.65]">
+              <div className="mb-2 text-faint">
+                how mini-apps plug into circles.
+              </div>
+              <a
+                href="https://docs.aboutcircles.com/miniapps"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-b border-ink text-ink hover:bg-ghost"
+              >
+                → docs.aboutcircles.com/miniapps
+              </a>
             </div>
           </Pane>
 

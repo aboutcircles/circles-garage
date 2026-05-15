@@ -168,6 +168,17 @@ export default async function DashboardPage() {
                   + submit mini-app
                 </Btn>
               </div>
+              <div className="mt-3 font-mono text-[11px] text-faint">
+                ↳ new to mini-apps?{" "}
+                <a
+                  href="https://docs.aboutcircles.com/miniapps"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-b border-ink text-ink hover:bg-ghost"
+                >
+                  skim the docs
+                </a>
+              </div>
             </div>
           ) : (
             <>

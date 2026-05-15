@@ -1,6 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "NODE_ENV",
+    "AUTH_SESSION_SECRET",
+    "AUTH_AUDIENCE",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "GNOSIS_RPC_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

@@ -1,58 +1,103 @@
 // Cycle math.
 //
-// Each cycle is 7 days. Cycle N ends Sunday 23:59:59 CET, with the snapshot
-// taken at that moment; prizes are paid the following Monday morning.
+// circles/garage is a 6-week program. Cycles run Friday→Friday, with
+// snapshots + prizes + builder Q&A at the end of each Friday.
 //
-// The anchor below pins "cycle 01" to the week ending Sunday 17 May 2026
-// 23:59:59 CET. To re-launch under a different cycle 01, change CYCLE_01_END.
+// Cycle 01 is the opener — it's a short cycle (Mon 18 May 2026 → Fri 22 May
+// 2026 23:59 CET, ~5 days) because the program launches on Monday but we
+// hand out the first prizes that same Friday. Cycles 02–06 are the regular
+// 7-day Friday→Friday rhythm. Cycle 06 ends Fri 26 Jun 2026 = the grand
+// finale.
 //
-// Timezone handling: we anchor against a fixed UTC timestamp and use 7-day
-// real-time increments, so "Sunday 23:59 CET" drifts by one hour across the
-// CET ↔ CEST DST transitions (last Sunday of March / October). For
-// week-scale accuracy this is fine; if it matters later, swap to a tz-aware
-// library.
+// All anchors are stored as fixed UTC timestamps with the CEST offset
+// baked in. We don't currently model the CET ↔ CEST DST switch within the
+// 6-week window because the whole program sits inside CEST (last Sun of
+// March → last Sun of October). If circles/garage runs again in winter,
+// re-pin the constants below.
 
-// Sunday 17 May 2026 23:59:59 CEST = 21:59:59 UTC.
-const CYCLE_01_END_MS = Date.UTC(2026, 4, 17, 21, 59, 59);
+// All anchors below are 23:59:59 CEST = 21:59:59 UTC.
+const CYCLE_01_END_MS = Date.UTC(2026, 4, 22, 21, 59, 59); // Fri 22 May 2026
+const CYCLE_01_START_MS = Date.UTC(2026, 4, 17, 22, 0, 0); // Mon 18 May 00:00 CEST
+const FINALE_END_MS = Date.UTC(2026, 5, 26, 21, 59, 59); // Fri 26 Jun 2026
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+export const TOTAL_CYCLES = 6;
 
 export type CycleInfo = {
   cycle: number;
-  /** UTC ms when the current cycle's snapshot fires. */
+  totalCycles: number;
+  /** UTC ms when the current cycle's snapshot fires (Friday 23:59 CET). */
   endsAtMs: number;
-  /** UTC ms when the current cycle started (Monday 00:00 CET). */
+  /** UTC ms when the current cycle started. */
   startedAtMs: number;
   /** Padded label, e.g. "01". */
   cycleLabel: string;
-  /** e.g. "SUN 17" — day of cycle end in Europe/Berlin. */
+  /** e.g. "01/06" — current cycle vs total. */
+  cycleOfTotal: string;
+  /** e.g. "FRI 22" — day of cycle end in Europe/Berlin. */
   endsAtLabel: string;
-  /** Time remaining in ms. */
+  /** UTC ms of the grand finale (cycle 06 end). */
+  finaleAtMs: number;
+  /** e.g. "FRI 26 JUN". */
+  finaleLabel: string;
+  /** True when current cycle is cycle 06. */
+  isFinalCycle: boolean;
+  /** True when the program has ended (now > finale). */
+  isOver: boolean;
+  /** Time remaining in ms to the current cycle's snapshot. */
   msUntilEnd: number;
-  /** e.g. "3d 12h" — coarse human-readable. */
+  /** e.g. "3d 12h" — coarse human-readable countdown. */
   countdownLabel: string;
 };
 
 export function getCycleInfo(now: Date = new Date()): CycleInfo {
   const nowMs = now.getTime();
-  // Cycle index: how many full cycles have ended before "now".
-  // Cycle 01 ends at CYCLE_01_END_MS. If now ≤ that, we're in cycle 01.
-  const cyclesElapsed =
-    nowMs <= CYCLE_01_END_MS
-      ? 0
-      : Math.floor((nowMs - CYCLE_01_END_MS) / WEEK_MS) + 1;
-  const cycle = cyclesElapsed + 1;
-  const endsAtMs = CYCLE_01_END_MS + cyclesElapsed * WEEK_MS;
-  // Started at the Monday 00:00 CET of the same week — 6d 23h 59m 59s before
-  // the snapshot.
-  const startedAtMs = endsAtMs - (WEEK_MS - 1000);
+
+  let cycle: number;
+  let endsAtMs: number;
+  let startedAtMs: number;
+
+  if (nowMs <= CYCLE_01_END_MS) {
+    // Inside (or before) the short opener cycle.
+    cycle = 1;
+    endsAtMs = CYCLE_01_END_MS;
+    startedAtMs = CYCLE_01_START_MS;
+  } else {
+    // Subsequent cycles are 7-day Fri→Fri. Cycle 02 ends one week after
+    // cycle 01.
+    const weeksSinceCycle1End = Math.floor(
+      (nowMs - CYCLE_01_END_MS) / WEEK_MS,
+    );
+    const additionalCycles = weeksSinceCycle1End + 1; // +1 because we're already in cycle 02 the moment cycle 01 ends
+    cycle = Math.min(1 + additionalCycles, TOTAL_CYCLES);
+    endsAtMs = CYCLE_01_END_MS + additionalCycles * WEEK_MS;
+    startedAtMs = endsAtMs - WEEK_MS + 1000;
+  }
+
+  // `>=` so the snapshot second itself flips the program to "over" and the
+  // override below clamps us to cycle 06 (avoids a 1-second window where the
+  // else branch above would compute cycle 07 ending Fri 3 Jul).
+  const isOver = nowMs >= FINALE_END_MS;
+  if (isOver) {
+    cycle = TOTAL_CYCLES;
+    endsAtMs = FINALE_END_MS;
+    startedAtMs = FINALE_END_MS - WEEK_MS + 1000;
+  }
+
   const msUntilEnd = Math.max(0, endsAtMs - nowMs);
 
   return {
     cycle,
+    totalCycles: TOTAL_CYCLES,
     endsAtMs,
     startedAtMs,
     cycleLabel: String(cycle).padStart(2, "0"),
+    cycleOfTotal: `${String(cycle).padStart(2, "0")}/${String(TOTAL_CYCLES).padStart(2, "0")}`,
     endsAtLabel: formatBerlinDate(endsAtMs),
+    finaleAtMs: FINALE_END_MS,
+    finaleLabel: formatBerlinDateLong(FINALE_END_MS),
+    isFinalCycle: cycle === TOTAL_CYCLES,
+    isOver,
     msUntilEnd,
     countdownLabel: formatCountdown(msUntilEnd),
   };
@@ -82,4 +127,25 @@ function formatBerlinDate(ms: number): string {
     timeZone: "Europe/Berlin",
   });
   return `${weekday} ${day}`;
+}
+
+function formatBerlinDateLong(ms: number): string {
+  const d = new Date(ms);
+  const weekday = d
+    .toLocaleDateString("en-US", {
+      weekday: "short",
+      timeZone: "Europe/Berlin",
+    })
+    .toUpperCase();
+  const day = d.toLocaleDateString("en-US", {
+    day: "numeric",
+    timeZone: "Europe/Berlin",
+  });
+  const month = d
+    .toLocaleDateString("en-US", {
+      month: "short",
+      timeZone: "Europe/Berlin",
+    })
+    .toUpperCase();
+  return `${weekday} ${day} ${month}`;
 }

@@ -10,6 +10,16 @@ export default function LeaderboardPage() {
   const cycle = cycleInfo.cycleLabel;
   const rows = content.leaderboard;
   const empty = rows.length === 0;
+  const now = new Date();
+  const programOpen = now.getTime() >= cycleInfo.startedAtMs;
+  const startsAtLabel = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "Europe/Berlin",
+  })
+    .format(new Date(cycleInfo.startedAtMs))
+    .toUpperCase();
 
   return (
     <Page
@@ -30,7 +40,7 @@ export default function LeaderboardPage() {
           <S k="builders" v={String(rows.length)} />
         </>
       }
-      breadcrumb={`leaderboard / cycle ${cycle} / open`}
+      breadcrumb={`leaderboard / cycle ${cycle} / ${programOpen ? "open" : "pre-launch"}`}
     >
       <Grid cols="1.6fr 1fr" gap={12} fill>
         {/* main table */}
@@ -38,14 +48,18 @@ export default function LeaderboardPage() {
           title="who moved the needle"
           hint={
             empty
-              ? `cycle ${cycle} just opened`
-              : `rank by ↓ new minters · ${rows.length} builders`
+              ? programOpen
+                ? `cycle ${cycle} · live`
+                : `cycle ${cycle} opens ${startsAtLabel}`
+              : `rank by ↓ judges' score · ${rows.length} builders`
           }
         >
           {empty ? (
             <div className="py-6 font-mono text-[13px] leading-[1.7]">
               <div className="text-faint">
-                no entries yet · cycle {cycle} opened today. first snapshot in{" "}
+                {programOpen
+                  ? `no entries yet · cycle ${cycle} is open. first snapshot in `
+                  : `cycle ${cycle} opens ${startsAtLabel}. first snapshot in `}
                 <LiveCountdown targetMs={cycleInfo.endsAtMs} />.
               </div>
               <div className="mt-4 flex items-center gap-2.5">
@@ -63,10 +77,9 @@ export default function LeaderboardPage() {
                   this week
                 </span>
                 <span>all time</span>
-                <span>circle of life</span>
                 <span>by track</span>
                 <span className="ml-auto">
-                  rank ↓ <span className="text-ink">new minters</span>
+                  rank ↓ <span className="text-ink">judges&apos; score</span>
                 </span>
                 <span>search ⌕</span>
                 <span>export csv ↓</span>
@@ -168,24 +181,36 @@ export default function LeaderboardPage() {
             )}
           </Pane>
 
-          <Pane title="circle of life" hint="longest streak">
-            {content.circleOfLife.length === 0 ? (
-              <div className="font-mono text-[11px] text-faint">
-                streaks accrue after the first snapshot.
+          <Pane title="prizes" hint="weekly · top 3">
+            <div
+              className="font-mono text-[13px]"
+              style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: "6px 12px" }}
+            >
+              {(["first", "second", "third"] as const).map((k, i) => (
+                <div key={k} className="contents">
+                  <span className="text-faint">
+                    {["1st", "2nd", "3rd"][i]}
+                  </span>
+                  <span className="border-b border-dotted border-hair" />
+                  <span className="font-bold">
+                    {content.program.prizes[k]}
+                  </span>
+                </div>
+              ))}
+              <div className="contents">
+                <span className="text-faint">total</span>
+                <span className="border-b border-hair" />
+                <span>
+                  <b>{content.program.prizes.total}</b>
+                  <span className="ml-1 text-faint">
+                    · {content.program.prizes.currency}
+                  </span>
+                </span>
               </div>
-            ) : (
-              <div className="font-mono text-xs leading-[1.8]">
-                {content.circleOfLife.map((c) => (
-                  <div key={c.builder}>
-                    <b>{c.builder}</b>
-                    <span className="ml-2">· {c.weeks} wks</span>
-                    <span className="ml-2 text-faint">
-                      · {c.bonus} bonus
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            </div>
+            <div className="mt-2.5 font-mono text-[11px] text-faint">
+              ↳ paid every friday after snapshot.
+            </div>
           </Pane>
 
           <Pane title="movers" hint="biggest jumps">
@@ -218,13 +243,12 @@ export default function LeaderboardPage() {
           <Pane title="schedule" hint={`cycle ${cycle}`}>
             <div className="font-mono text-xs leading-[1.85]">
               {content.schedule.map((s, i) => (
-                <div key={i}>
-                  <span className="mr-2 text-faint">{s.d}</span>· {s.body}
-                  {s.now && (
-                    <span className="ml-2 border border-ink px-1 text-[9px] font-bold">
-                      NOW
-                    </span>
-                  )}
+                <div key={i} className={s.pinned ? "font-bold" : ""}>
+                  <span className="mr-2 text-faint">
+                    {s.pinned ? "★ " : ""}
+                    {s.d}
+                  </span>
+                  · {s.body}
                 </div>
               ))}
             </div>

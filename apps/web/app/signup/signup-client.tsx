@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Btn,
   Field,
@@ -11,6 +11,7 @@ import {
   Steps,
   Textarea,
 } from "@workspace/ui/kit";
+import { cn } from "@workspace/ui/lib/utils";
 import { createBuilder } from "./actions";
 import type { SignupForm } from "@/lib/content";
 
@@ -18,16 +19,15 @@ type FormState = {
   handle: string;
   reach: string;
   circles_addr: string;
-  org_addr: string;
-  team: string;
   app_name: string;
   track: string;
   pitch: string;
+  org_addr: string;
+  team: string;
 };
 
 const STEP_REQUIRED: readonly (readonly (keyof FormState)[])[] = [
   ["handle", "reach", "circles_addr"],
-  ["org_addr"],
   ["app_name"],
   [],
 ];
@@ -42,6 +42,51 @@ const TRACK_OPTIONS = [
 
 const DISABLED_CLS = "disabled:opacity-40 disabled:cursor-not-allowed";
 
+const ADDR_RE = /^0x[a-fA-F0-9]{40}$/;
+const ADDR_FIELDS: ReadonlySet<keyof FormState> = new Set([
+  "circles_addr",
+  "org_addr",
+]);
+
+function validateAddr(name: keyof FormState, value: string): string | null {
+  if (!ADDR_FIELDS.has(name)) return null;
+  const v = value.trim();
+  if (v === "") return null; // empty handled by required-check, not the format check
+  return ADDR_RE.test(v) ? null : "must be a 0x address (40 hex chars)";
+}
+
+function composeHint(
+  hint: ReactNode | undefined,
+  createLink: { href: string; label: string } | undefined,
+  error: string | null,
+): ReactNode | undefined {
+  if (!hint && !createLink && !error) return undefined;
+  return (
+    <>
+      {hint}
+      {createLink && (
+        <>
+          {hint && <br />}
+          <a
+            href={createLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="border-b border-ink text-ink hover:bg-ghost"
+          >
+            {createLink.label} →
+          </a>
+        </>
+      )}
+      {error && (
+        <>
+          {(hint || createLink) && <br />}
+          <span className="text-ink">! {error}</span>
+        </>
+      )}
+    </>
+  );
+}
+
 export function SignupClient({
   form,
   githubLogin = "",
@@ -54,12 +99,13 @@ export function SignupClient({
     handle: githubLogin,
     reach: "",
     circles_addr: "",
-    org_addr: "",
-    team: "",
     app_name: "",
     track: "",
     pitch: "",
+    org_addr: "",
+    team: "",
   });
+  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "ok" | "err">(
     "idle",
   );
@@ -69,7 +115,21 @@ export function SignupClient({
     setData((d) => ({ ...d, [n]: v }));
 
   const required = STEP_REQUIRED[step] ?? [];
-  const canAdvance = required.every((n) => data[n].trim() !== "");
+  const requiredOk = required.every((n) => data[n].trim() !== "");
+
+  // Format errors on current section's fields (skip review step).
+  const currentSection = form.sections[step];
+  const formatErrors: Partial<Record<keyof FormState, string>> = {};
+  if (currentSection) {
+    for (const f of currentSection.fields) {
+      const name = f.name as keyof FormState;
+      const err = validateAddr(name, data[name] ?? "");
+      if (err) formatErrors[name] = err;
+    }
+  }
+  const hasFormatErrors = Object.keys(formatErrors).length > 0;
+  const canAdvance = requiredOk && !hasFormatErrors;
+
   const isReview = step === form.steps.length - 1;
 
   const next = () => {
@@ -86,7 +146,7 @@ export function SignupClient({
       handle: data.handle.trim(),
       reach: data.reach.trim(),
       circles_addr: data.circles_addr.trim(),
-      org_addr: data.org_addr.trim(),
+      org_addr: data.org_addr.trim() || null,
       team: data.team
         .split(",")
         .map((s) => s.trim())
@@ -132,13 +192,14 @@ export function SignupClient({
   }
 
   const section = form.sections[step];
+  const submitDisabled = !consent || status === "submitting";
 
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-5">
         <Hero
           size="lg"
-          sub="Three minutes. We need to know where to send prize money and where to look up your numbers."
+          sub="We need a way to reach you and an on-chain address to pay you. Everything else is a one-liner about your app."
         >
           who&apos;s shipping?
         </Hero>
@@ -174,6 +235,10 @@ export function SignupClient({
       {!isReview && section && (
         <Section num={section.num} label={section.label} hint={section.hint}>
           {section.fields.map((f) => {
+            const fname = f.name as keyof FormState;
+            const fieldError = formatErrors[fname] ?? null;
+            const hint = composeHint(f.hint, f.createLink, fieldError);
+
             if (f.name === "track") {
               return (
                 <Select
@@ -185,7 +250,7 @@ export function SignupClient({
                   options={TRACK_OPTIONS}
                   placeholder={f.placeholder}
                   required={f.required}
-                  hint={f.hint}
+                  hint={hint}
                 />
               );
             }
@@ -199,12 +264,11 @@ export function SignupClient({
                   onChange={set("pitch")}
                   placeholder={f.placeholder}
                   required={f.required}
-                  hint={f.hint}
+                  hint={hint}
                   rows={2}
                 />
               );
             }
-            const fname = f.name as keyof FormState;
             return (
               <Input
                 key={f.name}
@@ -214,7 +278,13 @@ export function SignupClient({
                 onChange={set(fname)}
                 placeholder={f.placeholder}
                 required={f.required}
-                hint={f.hint}
+                hint={hint}
+                readOnly={f.locked}
+                aria-readonly={f.locked || undefined}
+                tabIndex={f.locked ? -1 : undefined}
+                className={
+                  f.locked ? "cursor-not-allowed bg-ghost" : undefined
+                }
               />
             );
           })}
@@ -240,7 +310,7 @@ export function SignupClient({
               <Btn
                 primary
                 onClick={submit}
-                disabled={status === "submitting"}
+                disabled={submitDisabled}
                 className={DISABLED_CLS}
               >
                 {status === "submitting" ? "writing..." : form.submit}
@@ -253,35 +323,77 @@ export function SignupClient({
             )}
           </div>
 
-          {form.sections.map((sec) => (
-            <Section
-              key={sec.num}
-              num={sec.num}
-              label={sec.label}
-              hint={sec.hint}
+          {form.sections.map((sec) => {
+            const visible = sec.fields.filter((f) => {
+              const v = data[f.name as keyof FormState] ?? "";
+              // Always show required fields (even if empty, so the user sees gaps).
+              if (f.required) return true;
+              // Hide optional fields the user left empty.
+              return v.trim() !== "";
+            });
+            if (visible.length === 0) return null;
+            return (
+              <Section
+                key={sec.num}
+                num={sec.num}
+                label={sec.label}
+                hint={sec.hint}
+              >
+                {visible.map((f) => {
+                  const v = data[f.name as keyof FormState];
+                  return (
+                    <Field
+                      key={f.name}
+                      label={f.label}
+                      required={f.required}
+                      placeholder={f.placeholder}
+                      value={v || undefined}
+                      hint={f.hint}
+                    />
+                  );
+                })}
+              </Section>
+            );
+          })}
+
+          <label className="mt-7 flex cursor-pointer items-start gap-2.5 border-t border-hair pt-[18px] font-mono text-xs leading-[1.55] text-ink">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              className="sr-only"
+            />
+            <span
+              aria-hidden
+              className={cn(
+                "relative mt-0.5 inline-block h-3.5 w-3.5 shrink-0 border-[1.5px] border-ink",
+                consent ? "bg-ink" : "bg-transparent",
+              )}
             >
-              {sec.fields.map((f) => {
-                const v = data[f.name as keyof FormState];
-                return (
-                  <Field
-                    key={f.name}
-                    label={f.label}
-                    required={f.required}
-                    placeholder={f.placeholder}
-                    value={v || undefined}
-                    hint={f.hint}
-                  />
-                );
-              })}
-            </Section>
-          ))}
-          <div className="mt-7 border-t border-hair pt-[18px] font-mono text-xs leading-[1.55] text-faint">
-            [ ] {form.consent}
-          </div>
+              {consent && (
+                <span className="absolute top-[-4px] left-px text-[13px] font-bold text-paper">
+                  ✓
+                </span>
+              )}
+            </span>
+            <span className="flex-1">
+              I read the{" "}
+              <a
+                href={form.consentHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-b border-ink text-ink hover:bg-ghost"
+              >
+                rules
+              </a>
+              . The weekly snapshot is final. My handle &amp; app can show on
+              the public leaderboard.
+            </span>
+          </label>
         </>
       )}
 
-      {err && (
+      {err && !isReview && (
         <div className="mt-4 font-mono text-[11px] text-ink">! {err}</div>
       )}
 
@@ -310,7 +422,7 @@ export function SignupClient({
           <Btn
             primary
             onClick={submit}
-            disabled={status === "submitting"}
+            disabled={submitDisabled}
             className={DISABLED_CLS}
           >
             {status === "submitting" ? "writing..." : form.submit}

@@ -1,11 +1,12 @@
+import { redirect } from "next/navigation";
 import { content } from "@/lib/content";
 import { getCycleInfo } from "@/lib/cycle";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { UserBadge } from "@/components/user-badge";
 import { createClient } from "@/lib/supabase/server";
-import { Btn, Grid, Hero, Page, Pane, S, SDot } from "@workspace/ui/kit";
-import { RegisterClient } from "./register-client";
+import { Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
+import { RegisterClient, type SubmissionRow } from "./register-client";
 
 export default async function RegisterPage() {
   const d = content.draft;
@@ -16,21 +17,32 @@ export default async function RegisterPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let existingSubmission: {
-    app_name: string;
-    slug: string;
-    live_url: string;
-  } | null = null;
+  let existingSubmission: SubmissionRow | null = null;
 
   if (user) {
+    // Require a builder row before letting anyone fill out a submission —
+    // otherwise the form 500s on submit from the no_builder guard.
+    const { data: builder } = await supabase
+      .from("builders")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!builder) redirect("/signup");
+
     const { data } = await supabase
       .from("submissions")
-      .select("app_name, slug, live_url")
+      .select(
+        "app_name, slug, pitch, track, status, cycle, live_url, repo_url, contracts, readme",
+      )
       .eq("user_id", user.id)
       .eq("cycle", cycleInfo.cycle)
       .maybeSingle();
-    existingSubmission = data ?? null;
+    existingSubmission = (data as SubmissionRow | null) ?? null;
   }
+
+  const breadcrumb = existingSubmission
+    ? "dashboard / mini-apps / editing"
+    : "dashboard / mini-apps / new submission";
 
   return (
     <Page
@@ -50,69 +62,47 @@ export default async function RegisterPage() {
           <UserBadge />
         </>
       }
-      breadcrumb="dashboard / mini-apps / new submission"
+      breadcrumb={breadcrumb}
     >
       <Grid cols="2fr 1fr" gap={12} fill>
-        <Pane title="submit mini-app · drop the goods" hint="5 steps">
+        <Pane title="submit mini-app · drop the goods" hint="4 steps">
           {!user ? (
             <SignInPrompt intent="submit" next="/register" />
-          ) : existingSubmission ? (
-            <>
-              <Hero
-                size="lg"
-                sub={`you've already submitted for cycle ${cycleInfo.cycleLabel}. one app per cycle — edit or resubmit lands in the next snapshot.`}
-              >
-                you&apos;re in.
-              </Hero>
-              <div className="mt-7 border-t border-hair pt-4 font-mono text-xs leading-[1.6] text-faint">
-                {"// "}submissions/{existingSubmission.slug} ·{" "}
-                {existingSubmission.app_name}
-                <br />
-                {"// "}live → {existingSubmission.live_url}
-              </div>
-              <div className="mt-7 flex items-center gap-2.5">
-                <Btn primary href="/dashboard">
-                  → dashboard
-                </Btn>
-                <Btn href="/leaderboard">see leaderboard</Btn>
-              </div>
-            </>
           ) : (
-            <RegisterClient draft={d} />
+            <RegisterClient draft={d} existing={existingSubmission} />
           )}
         </Pane>
 
         <div
           className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto auto 1fr" }}
+          style={{ gridTemplateRows: "auto 1fr" }}
         >
-          <Pane title="what we measure" hint="default metrics">
-            <div className="font-mono text-xs leading-[1.9]">
-              {d.measures.map((m, i) => (
-                <div key={i} className={m.on ? "" : "text-faint"}>
-                  + {m.label}
+          <Pane title="how we judge" hint="holistic · per cycle">
+            <div className="font-mono text-xs leading-[1.7]">
+              {content.judging.map((j) => (
+                <div key={j.num} className="mb-2.5 last:mb-0">
+                  <div className="text-ink">
+                    {j.num}. {j.name}
+                  </div>
+                  <div className="text-faint">↳ {j.body}</div>
                 </div>
               ))}
             </div>
           </Pane>
 
-          <Pane title="checks" hint="auto-run on submit">
-            <div className="font-mono text-xs leading-[1.9] text-faint">
-              {d.checks.map((c, i) => (
-                <div key={i}>○ {c.label}</div>
-              ))}
-            </div>
-          </Pane>
-
-          <Pane title="snapshot" hint={`auto · ${cycleInfo.endsAtLabel} 23:59 CET`}>
+          <Pane
+            title="snapshot"
+            hint={`auto · ${cycleInfo.endsAtLabel} 23:59 CET`}
+          >
             <div className="font-mono text-xs leading-[1.6] text-faint">
               <div className="mb-2 font-bold text-ink">
                 in <LiveCountdown targetMs={cycleInfo.endsAtMs} />
               </div>
               <div>
-                cycles are 7 days · auto-snapshot every sunday 23:59 CET. only
-                “submit” makes a draft eligible for the next snapshot. you can
-                resubmit anytime before then.
+                cycles run friday → friday · auto-snapshot every friday 23:59
+                CET. cycle 01 is a 5-day opener (mon 18 may → fri 22 may).
+                every submit overwrites your current entry · the latest
+                version at snapshot time is what we judge.
               </div>
             </div>
           </Pane>

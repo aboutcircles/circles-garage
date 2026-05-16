@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCycleInfo } from "@/lib/cycle";
+import { HotkeyEnter } from "@/components/hotkey-enter";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { UserBadge } from "@/components/user-badge";
@@ -158,6 +159,7 @@ export default async function DashboardPage() {
                 ↳ press <kbd className="border border-hair px-1">enter</kbd> to
                 continue
               </div>
+              <HotkeyEnter href="/register" />
               <div className="mt-8 border-t border-hair pt-4 font-mono text-[11px] leading-[1.7] text-faint">
                 {`// you'll add: name, pitch, live url, contract addresses, and a short readme.`}
                 <br />

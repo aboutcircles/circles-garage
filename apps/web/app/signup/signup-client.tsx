@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Btn, Field, Hero, Input, Section, Steps } from "@workspace/ui/kit";
 import { cn } from "@workspace/ui/lib/utils";
 import { createBuilder } from "./actions";
+import { HotkeyEnter } from "@/components/hotkey-enter";
 import type { SignupForm } from "@/lib/content";
 
 type FormState = {
@@ -186,6 +187,7 @@ export function SignupClient({
           ↳ press <kbd className="border border-hair px-1">enter</kbd> to
           continue
         </div>
+        <HotkeyEnter href="/register" />
       </>
     );
   }

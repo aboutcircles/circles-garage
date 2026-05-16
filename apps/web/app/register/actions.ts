@@ -11,7 +11,7 @@ export type SubmissionInput = {
   contracts: { chain: string; addr: string; label: string }[];
   live_url: string;
   repo_url: string | null;
-  readme: { what: string; why: string; try: string };
+  notes: string;
 };
 
 export type SubmissionResult =
@@ -70,7 +70,7 @@ export async function createSubmission(
       contracts: input.contracts,
       live_url: input.live_url,
       repo_url: input.repo_url,
-      readme: input.readme,
+      readme: { notes: input.notes },
     },
     { onConflict: "user_id,cycle" },
   );

@@ -15,7 +15,7 @@ export function BrandBar() {
     <div className="flex flex-wrap items-center justify-between gap-4 border-t border-hair bg-paper px-4 py-2 font-mono text-[11px] text-faint">
       <Wordmark variant="full" />
       <div className="flex flex-wrap items-center gap-4">
-        <span>circles is money, reimagined.</span>
+        <span>circles is money issued by people.</span>
         {LINKS.map((link) => (
           <a
             key={link.href}

@@ -115,10 +115,10 @@ export default async function RegisterPage() {
                 in <LiveCountdown targetMs={cycleInfo.endsAtMs} />
               </div>
               <div>
-                cycles run friday → friday · auto-snapshot every friday 23:59
-                CET. cycle 01 is a 5-day opener (mon 18 may → fri 22 may).
-                every submit overwrites your current entry · the latest
-                version at snapshot time is what we judge.
+                cycles run friday → friday · we check submissions every friday
+                at 23:59 CET. cycle 01 is a 5-day opener (mon 18 may → fri 22
+                may). each submit replaces your current entry · the latest
+                version at check time is what we judge.
               </div>
             </div>
           </Pane>

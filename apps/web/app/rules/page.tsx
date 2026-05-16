@@ -81,7 +81,7 @@ export default function RulesPage() {
         <Pane title="the rules" hint="how circles/garage works">
           <Hero
             size="md"
-            sub={`6-week builder program · Friday-to-Friday cycles · ${prizes.total}/wk in ${prizes.currency} to the top 3. ship, get judged, get paid.`}
+            sub={`6-week builder program · Friday-to-Friday cycles · ${prizes.total} every week in ${prizes.currency}, shared by the top 3. No pitch deck. Submit a working mini-app. Winners get paid the same Friday.`}
           >
             the rules.
           </Hero>
@@ -133,7 +133,7 @@ export default function RulesPage() {
                   ··············································································
                 </span>
                 <span className="font-bold">
-                  {prizes.total}/wk {prizes.currency}
+                  {prizes.total} / week in {prizes.currency}
                 </span>
               </div>
             </div>

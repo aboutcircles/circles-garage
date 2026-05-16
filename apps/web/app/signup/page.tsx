@@ -44,7 +44,7 @@ export default async function SignupPage() {
       breadcrumb="welcome / signup"
     >
       <Grid cols="2fr 1fr" gap={12} fill>
-        <Pane title="signup · builder" hint="who's shipping?">
+        <Pane title="signup · builder" hint="tell us about you">
           {user ? (
             <SignupClient
               form={F}

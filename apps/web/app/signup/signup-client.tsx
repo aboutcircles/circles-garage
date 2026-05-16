@@ -200,7 +200,7 @@ export function SignupClient({
           size="lg"
           sub="We need a way to reach you and a Circles address to pay you. That's it — apps go on /register."
         >
-          who&apos;s shipping?
+          tell us about you.
         </Hero>
         <Steps all={form.steps} current={step} />
       </div>

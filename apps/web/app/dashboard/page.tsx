@@ -161,7 +161,7 @@ export default async function DashboardPage() {
               <div className="mt-8 border-t border-hair pt-4 font-mono text-[11px] leading-[1.7] text-faint">
                 {`// you'll add: name, pitch, live url, contract addresses, and a short readme.`}
                 <br />
-                {`// you can save and come back — every submit overwrites the current cycle's entry.`}
+                {`// you can save and come back — each submit replaces the current cycle's entry.`}
               </div>
             </div>
           </Pane>

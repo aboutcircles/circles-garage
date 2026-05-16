@@ -198,7 +198,7 @@ export const content: Content = {
     kicker:
       "// circles/garage · 6-week builder program · friday-to-friday · paid in CRC",
     headline: ["Get paid to ship", "mini-apps on Circles."],
-    sub: "$500 in CRC every week to the top 3 builders. 6 cycles, Friday-to-Friday. No decks, no rounds — ship, get judged, get paid.",
+    sub: "Top 3 builders share $500 in CRC every week. 6 cycles, Friday-to-Friday. No pitch deck. Submit a working mini-app. Winners get paid the same Friday.",
     ctaPrimary: "sign up →",
     ctaSecondary: "submit a mini-app →",
     steps: [
@@ -211,15 +211,15 @@ export const content: Content = {
       [
         "iii.",
         "get judged. get paid.",
-        "snapshot every friday 23:59 CET. top 3 paid same day in CRC.",
+        "we check submissions every friday at 23:59 CET. top 3 paid the same day in CRC.",
       ],
     ],
     manifesto: [
-      "Circles is money, reimagined as relational currency. Mini-apps are how it stops being a thesis and becomes a daily habit.",
+      "Circles is money issued by people, not banks. Mini-apps are how it stops being a thesis and becomes a daily habit.",
       "circles/garage pays the builders making that habit real — judged on what shipped, not on the pitch.",
-      "We weigh five things: how deeply you use Circles primitives, whether a non-crypto person would open it twice, the UX, weekly referrals (invites that landed a new wallet inside the app), and weekly activity inside the host.",
+      "We weigh five things: how deeply you use Circles primitives, whether a non-crypto person would open it twice, the UX, weekly referrals (invites that landed a new wallet inside the app), and weekly activity inside the Circles app.",
       "Once you've placed top-3, you file a 200-word progress note each cycle: what shipped, links, what's next. We keep paying the apps that keep moving.",
-      "6 weeks. 6 cycles. $500/wk to the top 3, paid in CRC on Friday. Grand finale Fri 26 Jun.",
+      "6 weeks. 6 cycles. $500 every week, shared by the top 3 builders, paid in CRC on Friday. Grand finale Fri 26 Jun.",
       "~ build in public, get paid every Friday.",
     ],
     bulletin: [
@@ -294,7 +294,7 @@ export const content: Content = {
     {
       num: "05",
       name: "Activity",
-      body: "Weekly unique wallets that opened the mini-app inside the host (and time spent), where host analytics exist. Mixpanel CSV every Friday from the Circles team.",
+      body: "Weekly unique wallets that opened the mini-app inside the Circles app (and time spent), where analytics exist. Mixpanel CSV every Friday from the Circles team.",
     },
     {
       num: "06",
@@ -366,7 +366,7 @@ export const content: Content = {
     consentHref: "/rules",
     benefits: [
       "builder page on the public leaderboard",
-      "eligibility for $500/wk in CRC (top 3)",
+      "weekly CRC prizes for top 3: $250 / $150 / $100",
       "invite to the builder TG & weekly workshop",
     ],
     benefitsMuted: ["co-marketing when top-3"],

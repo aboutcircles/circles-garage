@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCycleInfo } from "@/lib/cycle";
@@ -23,9 +24,6 @@ type BuilderRow = {
   circles_addr: string;
   org_addr: string;
   team: string[] | null;
-  app_name: string;
-  track: string | null;
-  pitch: string | null;
   github_login: string | null;
 };
 
@@ -82,7 +80,7 @@ export default async function DashboardPage() {
   const { data: builder } = await supabase
     .from("builders")
     .select(
-      "handle,reach,circles_addr,org_addr,team,app_name,track,pitch,github_login",
+      "handle,reach,circles_addr,org_addr,team,github_login",
     )
     .eq("user_id", user.id)
     .maybeSingle<BuilderRow>();
@@ -102,28 +100,82 @@ export default async function DashboardPage() {
   const currentCycleSubs = submissions.filter((s) => s.cycle === cycleInfo.cycle);
   const pastSubs = submissions.filter((s) => s.cycle !== cycleInfo.cycle);
   const hasCurrent = currentCycleSubs.length > 0;
+  const isFirstTime = submissions.length === 0;
+
+  const pageStatus = (
+    <>
+      <S k="you" v={`@${githubLogin}`} accent />
+      <SDot />
+      <S k="cycle" v={cycleInfo.cycleLabel} accent />
+      <SDot />
+      <S
+        k="snapshot"
+        v={<LiveCountdown targetMs={cycleInfo.endsAtMs} />}
+        accent
+      />
+      <UserBadge />
+    </>
+  );
+  const breadcrumb = `signed-in · @${githubLogin}${
+    builder.org_addr ? ` · org: ${builder.org_addr}` : ""
+  }`;
+
+  if (isFirstTime) {
+    return (
+      <Page
+        screen="03 Dashboard"
+        scroll
+        status={pageStatus}
+        breadcrumb={breadcrumb}
+      >
+        <Grid cols={1} gap={12} fill>
+          <Pane title="next step" hint="submit your first mini-app">
+            <div className="mx-auto max-w-[640px] py-8">
+              <Hero
+                size="lg"
+                sub={`you're signed up as @${githubLogin}. cycle ${cycleInfo.cycleLabel} closes in ${cycleInfo.countdownLabel} — submit your first mini-app to be eligible.`}
+              >
+                one more step.
+              </Hero>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/register"
+                  autoFocus
+                  className="inline-flex cursor-pointer items-center gap-2 border border-ink bg-ink px-6 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.04em] text-paper focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 focus:ring-offset-paper"
+                >
+                  + submit mini-app
+                </Link>
+                <a
+                  href="https://docs.aboutcircles.com/miniapps/what-are-circles-mini-apps.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-faint underline underline-offset-[3px] hover:text-ink"
+                >
+                  what&apos;s a mini-app? ↗
+                </a>
+              </div>
+              <div className="mt-3 font-mono text-[11px] text-faint">
+                ↳ press <kbd className="border border-hair px-1">enter</kbd> to
+                continue
+              </div>
+              <div className="mt-8 border-t border-hair pt-4 font-mono text-[11px] leading-[1.7] text-faint">
+                {`// you'll add: name, pitch, live url, contract addresses, and a short readme.`}
+                <br />
+                {`// you can save and come back — every submit overwrites the current cycle's entry.`}
+              </div>
+            </div>
+          </Pane>
+        </Grid>
+      </Page>
+    );
+  }
 
   return (
     <Page
       screen="03 Dashboard"
       scroll
-      status={
-        <>
-          <S k="you" v={`@${githubLogin}`} accent />
-          <SDot />
-          <S k="cycle" v={cycleInfo.cycleLabel} accent />
-          <SDot />
-          <S
-            k="snapshot"
-            v={<LiveCountdown targetMs={cycleInfo.endsAtMs} />}
-            accent
-          />
-          <UserBadge />
-        </>
-      }
-      breadcrumb={`signed-in · @${githubLogin}${
-        builder.org_addr ? ` · org: ${builder.org_addr}` : ""
-      }`}
+      status={pageStatus}
+      breadcrumb={breadcrumb}
     >
       <Grid cols="1.4fr 1fr" gap={12} fill>
         <Pane title="dashboard" hint={`cycle ${cycleInfo.cycleLabel}`} span={2}>
@@ -151,56 +203,25 @@ export default async function DashboardPage() {
 
         <Pane
           title="your submissions"
-          hint={
-            submissions.length === 0
-              ? "none yet"
-              : `${submissions.length} total · ${currentCycleSubs.length} this cycle`
-          }
+          hint={`${submissions.length} total · ${currentCycleSubs.length} this cycle`}
         >
-          {submissions.length === 0 ? (
-            <div className="py-6 font-mono text-[13px] leading-[1.7]">
-              <div className="text-faint">
-                nothing submitted yet. submit your first mini-app to be eligible
-                for cycle {cycleInfo.cycleLabel}.
-              </div>
-              <div className="mt-4">
-                <Btn primary href="/register">
-                  + submit mini-app
-                </Btn>
-              </div>
-              <div className="mt-3 font-mono text-[11px] text-faint">
-                ↳ new to mini-apps?{" "}
-                <a
-                  href="https://docs.aboutcircles.com/miniapps"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border-b border-ink text-ink hover:bg-ghost"
-                >
-                  skim the docs
-                </a>
-              </div>
-            </div>
-          ) : (
-            <>
-              {currentCycleSubs.length > 0 && (
-                <Section
-                  num="01"
-                  label={`cycle ${cycleInfo.cycleLabel}`}
-                  hint="this cycle"
-                >
-                  {currentCycleSubs.map((s) => (
-                    <SubmissionRowView key={s.id} sub={s} />
-                  ))}
-                </Section>
-              )}
-              {pastSubs.length > 0 && (
-                <Section num="02" label="past cycles" hint="archive">
-                  {pastSubs.map((s) => (
-                    <SubmissionRowView key={s.id} sub={s} />
-                  ))}
-                </Section>
-              )}
-            </>
+          {currentCycleSubs.length > 0 && (
+            <Section
+              num="01"
+              label={`cycle ${cycleInfo.cycleLabel}`}
+              hint="this cycle"
+            >
+              {currentCycleSubs.map((s) => (
+                <SubmissionRowView key={s.id} sub={s} />
+              ))}
+            </Section>
+          )}
+          {pastSubs.length > 0 && (
+            <Section num="02" label="past cycles" hint="archive">
+              {pastSubs.map((s) => (
+                <SubmissionRowView key={s.id} sub={s} />
+              ))}
+            </Section>
           )}
         </Pane>
 
@@ -212,9 +233,6 @@ export default async function DashboardPage() {
           {builder.team && builder.team.length > 0 && (
             <Field label="team" value={builder.team.join(", ")} />
           )}
-          <Field label="app name" value={builder.app_name} />
-          {builder.track && <Field label="track" value={builder.track} />}
-          {builder.pitch && <Field label="pitch" value={builder.pitch} />}
         </Pane>
       </Grid>
     </Page>

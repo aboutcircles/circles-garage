@@ -59,7 +59,7 @@ export default async function SignupPage() {
 
         <div
           className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto 1fr" }}
+          style={{ gridTemplateRows: "auto auto 1fr" }}
         >
           <Pane title="what you get" hint="benefits">
             <div className="font-mono text-xs leading-[1.9]">
@@ -71,6 +71,31 @@ export default async function SignupPage() {
                   + {b}
                 </div>
               ))}
+            </div>
+          </Pane>
+
+          <Pane title="where to find it" hint="circles profile address">
+            <div className="font-mono text-xs leading-[1.6] text-faint">
+              <div className="mb-2 font-bold text-ink">from the gnosis app</div>
+              <div>
+                open the{" "}
+                <a
+                  href="https://app.gnosis.io/welcome"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-b border-ink text-ink hover:bg-ghost"
+                >
+                  gnosis app
+                </a>
+                . tap the qr icon next to your avatar.
+              </div>
+              <div className="my-2 border-t border-hair" />
+              <div>
+                copy the <span className="text-ink">profile url</span> under
+                your handle — or tap <span className="text-ink">advanced</span>{" "}
+                → copy the <span className="text-ink">wallet address</span>{" "}
+                (0x…). either works here.
+              </div>
             </div>
           </Pane>
 

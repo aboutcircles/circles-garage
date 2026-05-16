@@ -1,16 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import {
-  Btn,
-  Field,
-  Hero,
-  Input,
-  Section,
-  Select,
-  Steps,
-  Textarea,
-} from "@workspace/ui/kit";
+import Link from "next/link";
+import { Btn, Field, Hero, Input, Section, Steps } from "@workspace/ui/kit";
 import { cn } from "@workspace/ui/lib/utils";
 import { createBuilder } from "./actions";
 import type { SignupForm } from "@/lib/content";
@@ -19,34 +11,30 @@ type FormState = {
   handle: string;
   reach: string;
   circles_addr: string;
-  app_name: string;
-  track: string;
-  pitch: string;
   org_addr: string;
   team: string;
 };
 
 const STEP_REQUIRED: readonly (readonly (keyof FormState)[])[] = [
   ["handle", "reach", "circles_addr"],
-  ["app_name"],
   [],
 ];
-
-const TRACK_OPTIONS = [
-  { value: "payments", label: "payments" },
-  { value: "social", label: "social" },
-  { value: "games", label: "games" },
-  { value: "tools", label: "tools" },
-  { value: "other", label: "other" },
-] as const;
 
 const DISABLED_CLS = "disabled:opacity-40 disabled:cursor-not-allowed";
 
 const ADDR_RE = /^0x[a-fA-F0-9]{40}$/;
+const ADDR_EXTRACT_RE = /0x[a-fA-F0-9]{40}/;
 const ADDR_FIELDS: ReadonlySet<keyof FormState> = new Set([
   "circles_addr",
   "org_addr",
 ]);
+
+/** Extract a 0x40-hex address from any pasted string (e.g. a profile URL). */
+function normalizeAddr(name: keyof FormState, value: string): string {
+  if (!ADDR_FIELDS.has(name)) return value;
+  const match = value.match(ADDR_EXTRACT_RE);
+  return match ? match[0] : value;
+}
 
 function validateAddr(name: keyof FormState, value: string): string | null {
   if (!ADDR_FIELDS.has(name)) return null;
@@ -99,9 +87,6 @@ export function SignupClient({
     handle: githubLogin,
     reach: "",
     circles_addr: "",
-    app_name: "",
-    track: "",
-    pitch: "",
     org_addr: "",
     team: "",
   });
@@ -112,7 +97,7 @@ export function SignupClient({
   const [err, setErr] = useState<string | null>(null);
 
   const set = (n: keyof FormState) => (v: string) =>
-    setData((d) => ({ ...d, [n]: v }));
+    setData((d) => ({ ...d, [n]: normalizeAddr(n, v) }));
 
   const required = STEP_REQUIRED[step] ?? [];
   const requiredOk = required.every((n) => data[n].trim() !== "");
@@ -151,9 +136,6 @@ export function SignupClient({
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-      app_name: data.app_name.trim(),
-      track: data.track || null,
-      pitch: data.pitch.trim() || null,
     });
     if (!result.ok) {
       setErr(result.message);
@@ -178,14 +160,26 @@ export function SignupClient({
         <div className="mt-7 border-t border-hair pt-4 font-mono text-xs leading-[1.6] text-faint">
           {"// "}builders/{data.handle} — accepted into cycle queue.
           <br />
-          {"// "}next step: submit a mini-app under{" "}
-          {data.org_addr || "your org"}.
+          {"// "}next step: submit your mini-app.
         </div>
-        <div className="mt-7 flex items-center gap-2.5">
-          <Btn primary href="/register">
+        <div className="mt-7 flex flex-wrap items-center gap-4">
+          <Link
+            href="/register"
+            autoFocus
+            className="inline-flex cursor-pointer items-center gap-2 border border-ink bg-ink px-6 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.04em] text-paper focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 focus:ring-offset-paper"
+          >
             submit a mini-app →
-          </Btn>
-          <Btn href="/">← back to landing</Btn>
+          </Link>
+          <Link
+            href="/"
+            className="font-mono text-xs text-faint underline underline-offset-[3px] hover:text-ink"
+          >
+            ← back to landing
+          </Link>
+        </div>
+        <div className="mt-3 font-mono text-[11px] text-faint">
+          ↳ press <kbd className="border border-hair px-1">enter</kbd> to
+          continue
         </div>
       </>
     );
@@ -199,7 +193,7 @@ export function SignupClient({
       <div className="flex flex-wrap items-end justify-between gap-5">
         <Hero
           size="lg"
-          sub="We need a way to reach you and an on-chain address to pay you. Everything else is a one-liner about your app."
+          sub="We need a way to reach you and a Circles address to pay you. That's it — apps go on /register."
         >
           who&apos;s shipping?
         </Hero>
@@ -239,36 +233,6 @@ export function SignupClient({
             const fieldError = formatErrors[fname] ?? null;
             const hint = composeHint(f.hint, f.createLink, fieldError);
 
-            if (f.name === "track") {
-              return (
-                <Select
-                  key={f.name}
-                  name={f.name}
-                  label={f.label}
-                  value={data.track}
-                  onChange={set("track")}
-                  options={TRACK_OPTIONS}
-                  placeholder={f.placeholder}
-                  required={f.required}
-                  hint={hint}
-                />
-              );
-            }
-            if (f.name === "pitch") {
-              return (
-                <Textarea
-                  key={f.name}
-                  name={f.name}
-                  label={f.label}
-                  value={data.pitch}
-                  onChange={set("pitch")}
-                  placeholder={f.placeholder}
-                  required={f.required}
-                  hint={hint}
-                  rows={2}
-                />
-              );
-            }
             return (
               <Input
                 key={f.name}

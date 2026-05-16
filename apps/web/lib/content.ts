@@ -338,40 +338,17 @@ export const content: Content = {
             label: "circles profile address",
             required: true,
             placeholder: "0x____________________________________",
-            hint: "this is where prizes get paid",
+            hint: "this is where prizes get paid · paste the wallet address or your profile url",
             createLink: {
-              href: "https://aboutcircles.com",
-              label: "don't have one? create one",
+              href: "https://app.gnosis.io/welcome",
+              label: "don't have a circles profile? get one",
             },
-          },
-        ],
-      },
-      {
-        num: "02",
-        label: "your app",
-        hint: "what you're building",
-        fields: [
-          {
-            name: "app_name",
-            label: "name",
-            required: true,
-            placeholder: "pocket-mint",
-          },
-          {
-            name: "track",
-            label: "track",
-            placeholder: "payments | social | games | tools | other",
-          },
-          {
-            name: "pitch",
-            label: "one-line pitch",
-            placeholder: "what it does in one breath",
           },
           {
             name: "org_addr",
             label: "circles org address",
             placeholder: "0x____________________________________",
-            hint: "optional · on-chain address for your team / treasury · one org per app",
+            hint: "optional · on-chain address for your team / treasury",
           },
           {
             name: "team",
@@ -382,7 +359,7 @@ export const content: Content = {
         ],
       },
     ],
-    steps: ["you", "app", "review"],
+    steps: ["you", "review"],
     submit: "create →",
     consent:
       "I read the rules. The weekly snapshot is final. My handle & app can show on the public leaderboard.",

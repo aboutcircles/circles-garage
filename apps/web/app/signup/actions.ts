@@ -8,9 +8,6 @@ export type SignupInput = {
   circles_addr: string;
   org_addr: string | null;
   team: string[];
-  app_name: string;
-  track: string | null;
-  pitch: string | null;
 };
 
 export type SignupResult =
@@ -41,9 +38,6 @@ export async function createBuilder(input: SignupInput): Promise<SignupResult> {
     circles_addr: input.circles_addr,
     org_addr: orgAddr,
     team: input.team,
-    app_name: input.app_name,
-    track: input.track,
-    pitch: input.pitch,
   });
 
   if (error) {

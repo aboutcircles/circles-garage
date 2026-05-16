@@ -1,5 +1,6 @@
 import { Hero } from "@workspace/ui/kit";
 import { SignInWithGitHub } from "@/components/sign-in-with-github";
+import { DevSignIn } from "@/components/dev-sign-in";
 
 type Intent = "signup" | "submit" | "dashboard";
 
@@ -33,6 +34,7 @@ export function SignInPrompt({ intent, next }: Props) {
       <div className="mt-7">
         <SignInWithGitHub next={next} />
       </div>
+      <DevSignIn next={next} />
     </>
   );
 }

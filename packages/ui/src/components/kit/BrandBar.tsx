@@ -17,7 +17,7 @@ export function BrandBar() {
       <Wordmark variant="full" />
       <div className="flex flex-wrap items-center gap-4">
         <ThemeToggle />
-        <span>circles is money, reimagined.</span>
+        <span>circles is money issued by people.</span>
         {LINKS.map((link) => (
           <a
             key={link.href}

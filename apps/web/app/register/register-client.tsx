@@ -267,8 +267,8 @@ export function RegisterClient({
           size="md"
           sub={
             isEditing
-              ? "Editing your submission for this cycle — every save overwrites the current entry. The latest version at snapshot is what we judge."
-              : "Every submit overwrites your current entry. The latest version at snapshot is what we judge."
+              ? "You're editing your submission for this cycle. Each save replaces the current entry. The latest version on Friday at 23:59 CET is what we judge."
+              : "Each submit replaces your current entry. The latest version on Friday at 23:59 CET is what we judge."
           }
         >
           {isEditing ? "editing" : "new submission"}
@@ -370,7 +370,7 @@ export function RegisterClient({
       {step === 2 && (
         <Section
           num="03"
-          label="proof of life"
+          label="show it works"
           hint="live · repo · readme"
         >
           <Input
@@ -498,7 +498,7 @@ export function RegisterClient({
             </div>
           </Section>
 
-          <Section num="03" label="proof of life">
+          <Section num="03" label="show it works">
             <Field
               label="live link"
               required

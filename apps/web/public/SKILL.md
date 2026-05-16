@@ -13,6 +13,8 @@ Six-week builder program. Each week has a Friday deadline; the top three entries
 
 ## Build a mini-app
 
+Mini-apps come in two shapes: **embedded** (runs inside the Circles host, which provides the user's address via `@aboutcircles/miniapp-sdk`) and **standalone** (regular web app, signed actions go through a Gnosis App deep-link QR). Pick the shape that fits the idea before scaffolding — see https://docs.aboutcircles.com/miniapps/what-are-circles-mini-apps.md.
+
 Start from the official template:
 
 ```

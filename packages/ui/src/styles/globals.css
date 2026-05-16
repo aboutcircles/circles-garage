@@ -83,6 +83,38 @@
   color-scheme: light;
 }
 
+/* Wordmark asset swap — the full <Wordmark variant="full" /> in <BrandBar>
+   sits on bg-paper. The default circles-logo.svg uses brand-blue lettering
+   that disappears against the dark paper in night mode. Render both assets
+   in JSX and show whichever matches the active theme. Mirrors the same
+   precedence as the token swap above. */
+.wordmark-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .wordmark-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .wordmark-dark {
+    display: inline-block;
+  }
+}
+
+:root[data-theme="dark"] .wordmark-light {
+  display: none;
+}
+:root[data-theme="dark"] .wordmark-dark {
+  display: inline-block;
+}
+
+:root[data-theme="light"] .wordmark-light {
+  display: inline-block;
+}
+:root[data-theme="light"] .wordmark-dark {
+  display: none;
+}
+
 @theme inline {
   --color-ink: var(--ink);
   --color-paper: var(--paper);

@@ -16,6 +16,17 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg" },
 };
 
+// Runs before the body paints so a stored light/dark override is on <html>
+// when the CSS resolves. No-op when the user is on "system".
+const themeBootstrap = `(() => {
+  try {
+    var t = localStorage.getItem("theme");
+    if (t === "dark" || t === "light") {
+      document.documentElement.setAttribute("data-theme", t);
+    }
+  } catch (e) {}
+})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={fontMono.variable}>
       <body className="bg-paper font-mono text-ink antialiased">
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
         {children}
       </body>
     </html>

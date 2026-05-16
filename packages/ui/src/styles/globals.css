@@ -7,7 +7,14 @@
    monochrome, paper-on-ink. Default is `bone`; switch via
    [data-palette="…"] on <html>. Tokens are surfaced as Tailwind
    theme colours below so utility classes like `bg-paper`, `text-ink`,
-   `border-hair`, `text-faint`, `bg-ghost` resolve correctly.            */
+   `border-hair`, `text-faint`, `bg-ghost` resolve correctly.
+
+   Light/dark is a separate axis from palette: `data-theme="dark"`
+   forces night tokens (specificity 0,2,0 — wins over palette). When
+   `data-theme` is absent, the OS preference decides. The night palette
+   is a deliberate design — slightly softer cream on warm near-black,
+   wider hair lines so dotted dividers stay legible, and a hotter ember
+   so the accent reads at the same weight as in light mode.            */
 
 :root,
 [data-palette="bone"] {
@@ -17,6 +24,7 @@
   --faint: rgba(20, 17, 13, 0.55);
   --ghost: rgba(20, 17, 13, 0.06);
   --ember: #ff491b;
+  color-scheme: light;
 }
 
 [data-palette="newsprint"] {
@@ -44,6 +52,35 @@
   --faint: rgba(246, 244, 239, 0.6);
   --ghost: rgba(246, 244, 239, 0.08);
   --ember: #ff6a3d;
+}
+
+/* night theme — applied when the OS prefers dark and the user hasn't
+   explicitly opted into light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #ede9df;
+    --paper: #14110d;
+    --hair: rgba(237, 233, 223, 0.16);
+    --faint: rgba(237, 233, 223, 0.55);
+    --ghost: rgba(237, 233, 223, 0.06);
+    --ember: #ff6a3d;
+    color-scheme: dark;
+  }
+}
+
+/* explicit user override — wins over palette and OS preference. */
+:root[data-theme="dark"] {
+  --ink: #ede9df;
+  --paper: #14110d;
+  --hair: rgba(237, 233, 223, 0.16);
+  --faint: rgba(237, 233, 223, 0.55);
+  --ghost: rgba(237, 233, 223, 0.06);
+  --ember: #ff6a3d;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 @theme inline {

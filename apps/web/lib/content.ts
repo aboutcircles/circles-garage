@@ -134,12 +134,6 @@ export type SignupForm = {
 // the user hasn't typed anything yet. Only the fields read by
 // `RegisterClient` exist on this type — the rest of the wireframe's
 // scaffolding (autosave clock, id, contract list, etc.) was retired.
-export type DraftReadme = {
-  what: string;
-  why: string;
-  try: string;
-};
-
 export type Draft = {
   name: string;
   pitch: string;
@@ -147,7 +141,7 @@ export type Draft = {
   appStatus: string;
   liveLink: string;
   repo: string;
-  readme: DraftReadme;
+  notes: string;
 };
 
 // ── root export ────────────────────────────────────────────────────
@@ -206,7 +200,7 @@ export const content: Content = {
       [
         "ii.",
         "submit a mini-app",
-        "contracts · live link · readme.",
+        "pitch · live link · ship it.",
       ],
       [
         "iii.",
@@ -385,10 +379,7 @@ export const content: Content = {
     appStatus: "live · v0.4",
     liveLink: "pocketmint.xyz",
     repo: "github.com/manyfold/pocket-mint",
-    readme: {
-      what: "tap-to-mint NFC stickers stuck to coasters / lamp posts / a friend's jacket.",
-      why: "onboarding is one tap. zero install. zero seed phrases.",
-      try: "walk in, find a coaster. tap.",
-    },
+    notes:
+      "open the link, connect a Gnosis wallet with any CRC balance, tap 'mint' on the home page. mobile only — demo video: https://twitter.com/manyfold/status/...",
   },
 };

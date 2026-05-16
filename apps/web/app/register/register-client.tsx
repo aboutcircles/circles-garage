@@ -14,8 +14,6 @@ import {
 import { createSubmission } from "./actions";
 import type { Draft } from "@/lib/content";
 
-type ReadmeState = { what: string; why: string; try: string };
-
 type FormState = {
   app_name: string;
   slug: string;
@@ -25,7 +23,14 @@ type FormState = {
   contracts_text: string;
   live_url: string;
   repo_url: string;
-  readme: ReadmeState;
+  notes: string;
+};
+
+type LegacyReadme = {
+  notes?: string;
+  what?: string;
+  why?: string;
+  try?: string;
 };
 
 export type SubmissionRow = {
@@ -38,8 +43,19 @@ export type SubmissionRow = {
   live_url: string;
   repo_url: string | null;
   contracts: { chain?: string; addr?: string; label?: string }[];
-  readme: { what?: string; why?: string; try?: string } | null;
+  readme: LegacyReadme | null;
 };
+
+/** Read notes from a row, migrating legacy `{what, why, try}` into one string. */
+function notesFromReadme(readme: LegacyReadme | null | undefined): string {
+  if (!readme) return "";
+  if (typeof readme.notes === "string" && readme.notes.trim() !== "")
+    return readme.notes;
+  const parts = [readme.what, readme.why, readme.try].filter(
+    (p): p is string => typeof p === "string" && p.trim() !== "",
+  );
+  return parts.join("\n\n");
+}
 
 const TRACK_OPTIONS = [
   { value: "payments", label: "payments" },
@@ -84,7 +100,7 @@ function initialFormState(existing: SubmissionRow | null): FormState {
       contracts_text: "",
       live_url: "",
       repo_url: "",
-      readme: { what: "", why: "", try: "" },
+      notes: "",
     };
   }
   const contracts_text = (existing.contracts ?? [])
@@ -100,11 +116,7 @@ function initialFormState(existing: SubmissionRow | null): FormState {
     contracts_text,
     live_url: existing.live_url ?? "",
     repo_url: existing.repo_url ?? "",
-    readme: {
-      what: existing.readme?.what ?? "",
-      why: existing.readme?.why ?? "",
-      try: existing.readme?.try ?? "",
-    },
+    notes: notesFromReadme(existing.readme),
   };
 }
 
@@ -112,17 +124,10 @@ type CheckItem = { label: string; ok: boolean };
 
 function computeChecks(data: FormState): CheckItem[] {
   const liveOk = data.live_url.trim() !== "" && looksLikeUrl(data.live_url);
-  const contractOk = parseContracts(data.contracts_text).length > 0;
-  const readmeOk =
-    data.readme.what.trim() !== "" &&
-    data.readme.why.trim() !== "" &&
-    data.readme.try.trim() !== "";
   return [
     { label: "name", ok: data.app_name.trim() !== "" },
     { label: "pitch", ok: data.pitch.trim() !== "" },
     { label: "live link", ok: liveOk },
-    { label: "contract", ok: contractOk },
-    { label: "readme", ok: readmeOk },
   ];
 }
 
@@ -132,7 +137,7 @@ function ChecksStrip({ checks }: { checks: CheckItem[] }) {
       <span className="text-faint">checks:</span>
       {checks.map((c, i) => (
         <span key={c.label} className="flex items-center gap-1">
-          <span className={c.ok ? "text-ink" : "text-faint"}>
+          <span className={c.ok ? "text-faint" : "font-bold text-ember"}>
             {c.ok ? "✓" : "✗"} {c.label}
           </span>
           {i < checks.length - 1 && (
@@ -174,16 +179,21 @@ export function RegisterClient({
     setData((d) => ({ ...d, slug: v }));
   };
   const setText =
-    (n: Exclude<keyof FormState, "contracts_text" | "readme">) =>
+    (n: Exclude<keyof FormState, "contracts_text">) =>
     (v: string) =>
       setData((d) => ({ ...d, [n]: v }));
   const setContractsText = (v: string) =>
     setData((d) => ({ ...d, contracts_text: v }));
-  const setReadme = (n: keyof ReadmeState) => (v: string) =>
-    setData((d) => ({ ...d, readme: { ...d.readme, [n]: v } }));
 
   const checks = computeChecks(data);
   const allChecksOk = checks.every((c) => c.ok);
+  const missingChecks = checks.filter((c) => !c.ok);
+
+  const liveUrlHasValue = data.live_url.trim() !== "";
+  const liveUrlError =
+    liveUrlHasValue && !looksLikeUrl(data.live_url)
+      ? "must start with http:// or https://"
+      : null;
 
   const stepValid = (s: number): boolean => {
     if (s === 0) return data.app_name.trim() !== "" && data.pitch.trim() !== "";
@@ -218,7 +228,7 @@ export function RegisterClient({
       contracts: cleanedContracts,
       live_url: data.live_url.trim(),
       repo_url: data.repo_url.trim() || null,
-      readme: data.readme,
+      notes: data.notes.trim(),
     });
     if (!result.ok) {
       setErr(result.message);
@@ -353,7 +363,7 @@ export function RegisterClient({
         <Section
           num="02"
           label="contracts"
-          hint="one address per line · gnosis"
+          hint="optional · one address per line · gnosis"
         >
           <Textarea
             name="contracts_text"
@@ -361,7 +371,7 @@ export function RegisterClient({
             value={data.contracts_text}
             onChange={setContractsText}
             placeholder={"0x4a82…9f12\n0x9911…c0e0"}
-            hint="one address per line"
+            hint="optional · one address per line · leave blank if your app has no on-chain contracts"
             rows={5}
           />
         </Section>
@@ -381,7 +391,14 @@ export function RegisterClient({
             value={data.live_url}
             onChange={setText("live_url")}
             placeholder={draft.liveLink}
-            hint="full URL · starts with http:// or https://"
+            invalid={!!liveUrlError}
+            hint={
+              liveUrlError ? (
+                <span className="font-bold text-ember">! {liveUrlError}</span>
+              ) : (
+                "full URL · starts with http:// or https://"
+              )
+            }
           />
           <Input
             name="repo_url"
@@ -394,28 +411,13 @@ export function RegisterClient({
 
           <div className="mt-4">
             <Textarea
-              name="readme_what"
-              label="readme · what"
-              value={data.readme.what}
-              onChange={setReadme("what")}
-              placeholder={draft.readme.what}
-              rows={2}
-            />
-            <Textarea
-              name="readme_why"
-              label="readme · why"
-              value={data.readme.why}
-              onChange={setReadme("why")}
-              placeholder={draft.readme.why}
-              rows={2}
-            />
-            <Textarea
-              name="readme_try"
-              label="readme · try"
-              value={data.readme.try}
-              onChange={setReadme("try")}
-              placeholder={draft.readme.try}
-              rows={2}
+              name="notes"
+              label="notes"
+              value={data.notes}
+              onChange={setText("notes")}
+              placeholder={draft.notes}
+              hint="optional · anything a judge should know to try this — required setup, the magic path to click, known issues, or a demo video link if running it isn't an option."
+              rows={6}
             />
           </div>
         </Section>
@@ -452,8 +454,16 @@ export function RegisterClient({
               </Btn>
             </div>
             {!allChecksOk && (
-              <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px] text-faint">
-                ↳ fix the missing checks above before submitting.
+              <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px] text-ember">
+                ↳ missing:{" "}
+                {missingChecks.map((c, i) => (
+                  <span key={c.label} className="font-bold">
+                    {c.label}
+                    {i < missingChecks.length - 1 && (
+                      <span className="font-normal text-faint"> · </span>
+                    )}
+                  </span>
+                ))}
               </div>
             )}
             {err && (
@@ -505,27 +515,16 @@ export function RegisterClient({
               value={data.live_url || undefined}
             />
             <Field label="repo" value={data.repo_url || undefined} />
-            <div className="mt-3.5 bg-ghost px-3 py-2.5 font-mono text-xs leading-[1.7]">
-              <div className="text-faint"># readme.md</div>
-              <div>
-                <b>what:</b>{" "}
-                <span className={data.readme.what ? "" : "italic text-faint"}>
-                  {data.readme.what || "—"}
-                </span>
+            {data.notes.trim() ? (
+              <div className="mt-3.5 bg-ghost px-3 py-2.5 font-mono text-xs leading-[1.7]">
+                <div className="text-faint"># notes</div>
+                <div className="whitespace-pre-wrap">{data.notes}</div>
               </div>
-              <div>
-                <b>why:</b>{" "}
-                <span className={data.readme.why ? "" : "italic text-faint"}>
-                  {data.readme.why || "—"}
-                </span>
+            ) : (
+              <div className="mt-3.5 font-mono text-[11px] italic text-faint">
+                ↳ no notes — judges will go straight to the live link.
               </div>
-              <div>
-                <b>try:</b>{" "}
-                <span className={data.readme.try ? "" : "italic text-faint"}>
-                  {data.readme.try || "—"}
-                </span>
-              </div>
-            </div>
+            )}
           </Section>
         </>
       )}

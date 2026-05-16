@@ -6,11 +6,15 @@ type WordmarkProps = { variant: "compact" | "full" };
  *
  * - `compact`: symbol only. Sized for the StatusBar rail.
  * - `full`: symbol + "Circles" wordmark. Sized for the BrandBar.
+ *
+ * Always renders as a link to `/home` — the app provides a small redirect
+ * handler at that path that points logged-in users at /dashboard and
+ * everyone else at the landing page.
  */
 export function Wordmark({ variant }: WordmarkProps) {
   if (variant === "compact") {
     return (
-      <span className="inline-flex items-center">
+      <a href="/home" className="inline-flex items-center hover:opacity-80">
         <img
           src="/brand/circles-symbol.svg"
           alt="Circles"
@@ -18,19 +22,25 @@ export function Wordmark({ variant }: WordmarkProps) {
         />
         <span className="mx-2 h-[14px] border-l border-current/30" />
         <span className="font-bold">garage</span>
-      </span>
+      </a>
     );
   }
 
   return (
-    <span className="inline-flex items-center">
+    <a href="/home" className="inline-flex items-center hover:opacity-80">
       <img
         src="/brand/circles-logo.svg"
         alt="Circles"
-        className="h-[22px] w-auto"
+        className="wordmark-light h-[22px] w-auto"
+      />
+      <img
+        src="/brand/circles-logo-dark.svg"
+        alt=""
+        aria-hidden
+        className="wordmark-dark h-[22px] w-auto"
       />
       <span className="mx-2 h-[22px] border-l border-hair" />
       <span className="font-mono text-[13px] font-bold">garage</span>
-    </span>
+    </a>
   );
 }

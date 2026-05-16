@@ -27,3 +27,4 @@ export { Check } from "./Check";
 export { StatusRow } from "./StatusRow";
 export { Wordmark } from "./Wordmark";
 export { BrandBar } from "./BrandBar";
+export { ThemeToggle } from "./ThemeToggle";

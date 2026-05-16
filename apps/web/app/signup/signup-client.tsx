@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Btn, Field, Hero, Input, Section, Steps } from "@workspace/ui/kit";
 import { cn } from "@workspace/ui/lib/utils";
@@ -95,6 +95,11 @@ export function SignupClient({
     "idle",
   );
   const [err, setErr] = useState<string | null>(null);
+  const successCtaRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    if (status === "ok") successCtaRef.current?.focus();
+  }, [status]);
 
   const set = (n: keyof FormState) => (v: string) =>
     setData((d) => ({ ...d, [n]: normalizeAddr(n, v) }));
@@ -164,8 +169,8 @@ export function SignupClient({
         </div>
         <div className="mt-7 flex flex-wrap items-center gap-4">
           <Link
+            ref={successCtaRef}
             href="/register"
-            autoFocus
             className="inline-flex cursor-pointer items-center gap-2 border border-ink bg-ink px-6 py-3.5 font-mono text-sm font-bold uppercase tracking-[0.04em] text-paper focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2 focus:ring-offset-paper"
           >
             submit a mini-app →

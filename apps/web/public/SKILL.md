@@ -18,7 +18,7 @@ Mini-apps come in two shapes: **embedded** (runs inside the Circles host, which 
 Start from the official template:
 
 ```
-git clone https://github.com/aboutcircles/circles-org-miniapp
+git clone https://github.com/aboutcircles/embedded-miniapp-boilerplate
 ```
 
 Follow its README for install and run commands; do not infer setup steps from elsewhere. A qualifying submission is a mini-app or standalone website that uses Circles primitives meaningfully and ships at a public URL a judge can open in a browser. CLIs, packages, libraries, and backend-only services do not qualify. Inside that envelope the format is open — pure web app, contracts plus a UI, etc. The template is convenient, not required.

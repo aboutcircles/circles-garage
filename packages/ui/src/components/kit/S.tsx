@@ -13,7 +13,7 @@ type SProps = {
  */
 export function S({ k, v, accent }: SProps) {
   return (
-    <span>
+    <span className="whitespace-nowrap">
       <span className="mr-1.5 opacity-[0.55]">{k}</span>
       <span className={cn(accent ? "font-bold" : "font-normal")}>{v}</span>
     </span>

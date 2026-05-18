@@ -43,13 +43,13 @@ export function Pane({
       style={gridStyle}
     >
       {title && (
-        <header className="flex items-center justify-between bg-ink px-2.5 py-[5px] font-mono text-[11px] uppercase tracking-[0.08em] text-paper">
-          <span>
+        <header className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 bg-ink px-2.5 py-[5px] font-mono text-[11px] uppercase tracking-[0.08em] text-paper">
+          <span className="whitespace-nowrap">
             <span className="opacity-[0.55]">┌─</span> {title}{" "}
             <span className="opacity-[0.55]">─┐</span>
           </span>
           {(headRight ?? hint) && (
-            <span className="text-[10px] tracking-normal normal-case opacity-70">
+            <span className="whitespace-nowrap text-[10px] tracking-normal normal-case opacity-70">
               {headRight ?? hint}
             </span>
           )}

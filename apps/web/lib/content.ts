@@ -223,8 +223,7 @@ export const content: Content = {
         href: "https://t.me/about_circles/499",
       },
       {
-        text: "office hours · schedule TBD",
-        href: "", // TODO: link to calendar or event
+        text: "office hours · every friday",
       },
       {
         text: "stuck? reach the team",
@@ -245,8 +244,8 @@ export const content: Content = {
     },
     {
       d: "TUE 19",
-      body: "workshop · time TBD",
-      href: "", // TODO: event link + confirmed time
+      body: "workshop · 18:00 CET",
+      href: "https://luma.com/pwz9bs20",
     },
     {
       d: "FRI 22",

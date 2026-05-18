@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
 import { getCycleInfo } from "@/lib/cycle";
 import { createClient } from "@/lib/supabase/server";
+import { IntroVideoModal } from "@/components/intro-video-modal";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInWithGitHub } from "@/components/sign-in-with-github";
 import { UserBadge } from "@/components/user-badge";
@@ -18,6 +19,20 @@ import {
 } from "@workspace/ui/kit";
 
 type LiveCounters = { builders: number; submissions: number };
+
+async function fetchIntroThumbnail(): Promise<string | null> {
+  try {
+    const res = await fetch(
+      "https://vimeo.com/api/oembed.json?url=https://vimeo.com/1193323348&width=640",
+      { next: { revalidate: 86400 } },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { thumbnail_url?: string };
+    return data.thumbnail_url ?? null;
+  } catch {
+    return null;
+  }
+}
 
 async function fetchLiveCounters(
   supabase: SupabaseClient,
@@ -45,9 +60,10 @@ export default async function LandingPage() {
   const cycle = cycleInfo.cycleLabel;
   const lbCount = content.leaderboard.length;
   const supabase = await createClient();
-  const [live, authResult] = await Promise.all([
+  const [live, authResult, introThumbnail] = await Promise.all([
     fetchLiveCounters(supabase),
     supabase.auth.getUser(),
+    fetchIntroThumbnail(),
   ]);
   const signedIn = !!authResult.data.user;
   const now = new Date();
@@ -188,6 +204,42 @@ export default async function LandingPage() {
             })}
           </Pane>
 
+          <Pane title="intro · welcome.mp4" hint="1 min" flush>
+            <IntroVideoModal thumbnailUrl={introThumbnail} />
+          </Pane>
+
+          <Pane title="manifesto.md" hint="why this exists">
+            <div className="font-mono text-[13px] leading-[1.65] text-ink">
+              {L.manifesto.map((para, i) => (
+                <p
+                  key={i}
+                  className={
+                    (i === 0 ? "m-0 " : "mt-2.5 ") +
+                    (i === L.manifesto.length - 1 ? "text-faint" : "text-ink")
+                  }
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
+          </Pane>
+        </div>
+
+        {/* right col */}
+        <div
+          className="grid min-h-0 gap-3"
+          style={{ gridTemplateRows: "auto auto auto auto 1fr" }}
+        >
+          <Pane
+            title={`cycle ${cycle} · pool`}
+            hint="weekly · top 3 · paid friday"
+          >
+            <div className="font-mono text-4xl font-bold leading-none tracking-[-1px]">
+              {p.pool}
+            </div>
+            <PrizesBreakdown />
+          </Pane>
+
           <Pane
             title={`leaderboard · cycle ${cycle}`}
             hint={lbCount === 0 ? "no entries yet" : `top 5 of ${lbCount}`}
@@ -250,38 +302,6 @@ export default async function LandingPage() {
                 </div>
               </>
             )}
-          </Pane>
-
-          <Pane title="manifesto.md" hint="why this exists">
-            <div className="font-mono text-[13px] leading-[1.65] text-ink">
-              {L.manifesto.map((para, i) => (
-                <p
-                  key={i}
-                  className={
-                    (i === 0 ? "m-0 " : "mt-2.5 ") +
-                    (i === L.manifesto.length - 1 ? "text-faint" : "text-ink")
-                  }
-                >
-                  {para}
-                </p>
-              ))}
-            </div>
-          </Pane>
-        </div>
-
-        {/* right col */}
-        <div
-          className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto auto auto 1fr" }}
-        >
-          <Pane
-            title={`cycle ${cycle} · pool`}
-            hint="weekly · top 3 · paid friday"
-          >
-            <div className="font-mono text-4xl font-bold leading-none tracking-[-1px]">
-              {p.pool}
-            </div>
-            <PrizesBreakdown />
           </Pane>
 
           <Pane title="counters" hint={countersHint}>

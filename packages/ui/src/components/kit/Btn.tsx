@@ -37,7 +37,7 @@ export function Btn({
         className,
       )
     : cn(
-        "inline-flex cursor-pointer items-center gap-1.5 border font-mono font-bold uppercase tracking-[0.04em]",
+        "inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap border font-mono font-bold uppercase tracking-[0.04em]",
         ember
           ? "border-ember bg-ember text-paper"
           : primary

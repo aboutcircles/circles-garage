@@ -50,7 +50,11 @@ export function Hero({
           {sub}
         </p>
       )}
-      {ctas && <div className="mt-[18px] flex items-center gap-3">{ctas}</div>}
+      {ctas && (
+        <div className="mt-[18px] flex flex-wrap items-center gap-x-3 gap-y-2">
+          {ctas}
+        </div>
+      )}
     </div>
   );
 }

@@ -14,7 +14,9 @@ export function StatusBar({ status }: StatusBarProps) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-2 bg-ink px-4 py-2 font-mono text-[11px] tracking-[0.04em] text-paper">
       <Wordmark variant="compact" />
-      <div className="flex items-center gap-[14px]">{status}</div>
+      <div className="flex flex-wrap items-center gap-x-[14px] gap-y-1">
+        {status}
+      </div>
     </header>
   );
 }

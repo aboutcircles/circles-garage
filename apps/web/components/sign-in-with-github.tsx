@@ -20,6 +20,7 @@ export function SignInWithGitHub({
 }: Props) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(false);
+  const [handedOff, setHandedOff] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const onClick = async () => {
@@ -31,14 +32,25 @@ export function SignInWithGitHub({
       const baseOrigin =
         process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
         window.location.origin;
-      const { error } = await supabase.auth.signInWithOAuth({
+
+      const { sdk } = await import("@farcaster/miniapp-sdk");
+      const inMiniApp = await sdk.isInMiniApp().catch(() => false);
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
           redirectTo: `${baseOrigin}/auth/callback?next=${encodeURIComponent(target)}`,
+          skipBrowserRedirect: inMiniApp,
         },
       });
       if (error) {
         setErr(error.message);
+        setLoading(false);
+        return;
+      }
+      if (inMiniApp && data?.url) {
+        await sdk.actions.openUrl(data.url);
+        setHandedOff(true);
         setLoading(false);
       }
     } catch (e) {
@@ -46,6 +58,12 @@ export function SignInWithGitHub({
       setLoading(false);
     }
   };
+
+  const btnLabel = loading
+    ? "redirecting…"
+    : handedOff
+      ? "opened in browser — finish there"
+      : label;
 
   return (
     <div>
@@ -55,8 +73,13 @@ export function SignInWithGitHub({
         onClick={onClick}
         disabled={loading}
       >
-        {loading ? "redirecting…" : label}
+        {btnLabel}
       </Btn>
+      {handedOff && (
+        <div className="mt-3 font-mono text-[11px] text-faint">
+          sign in completes in your browser. return here when done.
+        </div>
+      )}
       {err && (
         <div className="mt-3 font-mono text-[11px] text-ink">! {err}</div>
       )}

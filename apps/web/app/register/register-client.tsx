@@ -24,6 +24,7 @@ type FormState = {
   live_url: string;
   repo_url: string;
   notes: string;
+  changelog: string;
 };
 
 type LegacyReadme = {
@@ -31,6 +32,7 @@ type LegacyReadme = {
   what?: string;
   why?: string;
   try?: string;
+  changelog?: string;
 };
 
 export type SubmissionRow = {
@@ -89,8 +91,8 @@ function looksLikeUrl(s: string): boolean {
   return t.startsWith("http://") || t.startsWith("https://");
 }
 
-function initialFormState(existing: SubmissionRow | null): FormState {
-  if (!existing) {
+function initialFormState(seed: SubmissionRow | null): FormState {
+  if (!seed) {
     return {
       app_name: "",
       slug: "",
@@ -101,34 +103,43 @@ function initialFormState(existing: SubmissionRow | null): FormState {
       live_url: "",
       repo_url: "",
       notes: "",
+      changelog: "",
     };
   }
-  const contracts_text = (existing.contracts ?? [])
+  const contracts_text = (seed.contracts ?? [])
     .map((c) => (typeof c?.addr === "string" ? c.addr : ""))
     .filter((a) => a.length > 0)
     .join("\n");
   return {
-    app_name: existing.app_name ?? "",
-    slug: existing.slug ?? "",
-    pitch: existing.pitch ?? "",
-    track: existing.track ?? "",
-    status: existing.status ?? "",
+    app_name: seed.app_name ?? "",
+    slug: seed.slug ?? "",
+    pitch: seed.pitch ?? "",
+    track: seed.track ?? "",
+    status: seed.status ?? "",
     contracts_text,
-    live_url: existing.live_url ?? "",
-    repo_url: existing.repo_url ?? "",
-    notes: notesFromReadme(existing.readme),
+    live_url: seed.live_url ?? "",
+    repo_url: seed.repo_url ?? "",
+    notes: notesFromReadme(seed.readme),
+    changelog: seed.readme?.changelog ?? "",
   };
 }
 
 type CheckItem = { label: string; ok: boolean };
 
-function computeChecks(data: FormState): CheckItem[] {
+function computeChecks(
+  data: FormState,
+  requireChangelog: boolean,
+): CheckItem[] {
   const liveOk = data.live_url.trim() !== "" && looksLikeUrl(data.live_url);
-  return [
+  const base: CheckItem[] = [
     { label: "name", ok: data.app_name.trim() !== "" },
     { label: "pitch", ok: data.pitch.trim() !== "" },
     { label: "live link", ok: liveOk },
   ];
+  if (requireChangelog) {
+    base.push({ label: "changelog", ok: data.changelog.trim() !== "" });
+  }
+  return base;
 }
 
 function ChecksStrip({ checks }: { checks: CheckItem[] }) {
@@ -152,20 +163,52 @@ function ChecksStrip({ checks }: { checks: CheckItem[] }) {
 export function RegisterClient({
   draft,
   existing = null,
+  prefill = null,
+  currentCycleLabel,
+  countdown,
+  hasPastEntriesWithSameSlug = false,
 }: {
   draft: Draft;
   existing?: SubmissionRow | null;
+  prefill?: SubmissionRow | null;
+  currentCycleLabel: string;
+  countdown: string;
+  hasPastEntriesWithSameSlug?: boolean;
 }) {
-  const [step, setStep] = useState(0);
-  const slugTouched = useRef(!!existing?.slug);
+  // Three modes:
+  //   editing  → editing the current-cycle row
+  //   resubmit → no current-cycle row yet; seeded from a past cycle
+  //   new      → no current-cycle row, no seed
+  const mode: "editing" | "resubmit" | "new" = existing
+    ? "editing"
+    : prefill
+      ? "resubmit"
+      : "new";
+  const seed: SubmissionRow | null = existing ?? prefill;
 
-  const [data, setData] = useState<FormState>(() => initialFormState(existing));
+  const [step, setStep] = useState(0);
+  // In resubmit mode we treat the slug as already-locked (carry over).
+  const slugTouched = useRef(!!seed?.slug || mode === "resubmit");
+
+  const [data, setData] = useState<FormState>(() => initialFormState(seed));
   const [status, setStatus] = useState<"idle" | "submitting" | "ok" | "err">(
     "idle",
   );
   const [err, setErr] = useState<string | null>(null);
+  // The slug that's known to collide with a past-cycle entry — either
+  // because the page-load query found a sibling on the current slug, or
+  // because the server flagged it on a previous submit. Drives changelog
+  // visibility via slug equality so editing the slug clears the gate
+  // without needing another round-trip.
+  const [collidingSlug, setCollidingSlug] = useState<string | null>(
+    hasPastEntriesWithSameSlug ? (seed?.slug ?? null) : null,
+  );
 
-  const isEditing = !!existing;
+  const isEditing = mode === "editing";
+  const isResubmit = mode === "resubmit";
+  const currentSlug = (data.slug || slugify(data.app_name)).trim();
+  const hasPastEntries =
+    isResubmit || (collidingSlug !== null && currentSlug === collidingSlug);
 
   const setName = (v: string) => {
     setData((d) => ({
@@ -185,7 +228,7 @@ export function RegisterClient({
   const setContractsText = (v: string) =>
     setData((d) => ({ ...d, contracts_text: v }));
 
-  const checks = computeChecks(data);
+  const checks = computeChecks(data, hasPastEntries);
   const allChecksOk = checks.every((c) => c.ok);
   const missingChecks = checks.filter((c) => !c.ok);
 
@@ -197,10 +240,12 @@ export function RegisterClient({
 
   const stepValid = (s: number): boolean => {
     if (s === 0) return data.app_name.trim() !== "" && data.pitch.trim() !== "";
-    if (s === 2)
-      return (
-        data.live_url.trim() !== "" && looksLikeUrl(data.live_url)
-      );
+    if (s === 2) {
+      const liveOk =
+        data.live_url.trim() !== "" && looksLikeUrl(data.live_url);
+      const changelogOk = !hasPastEntries || data.changelog.trim() !== "";
+      return liveOk && changelogOk;
+    }
     // Review step gates on all checks — keeps a cleared pitch / wiped live
     // link from slipping past on a resubmit.
     if (s === 3) return allChecksOk;
@@ -208,6 +253,15 @@ export function RegisterClient({
   };
   const canAdvance = stepValid(step);
   const isReview = step === STEPS.length - 1;
+
+  const submitLabel =
+    status === "submitting"
+      ? "writing..."
+      : isResubmit
+        ? `resubmit for cycle ${currentCycleLabel} →`
+        : isEditing
+          ? "save changes →"
+          : "submit →";
 
   const next = () => {
     if (canAdvance && step < STEPS.length - 1) setStep(step + 1);
@@ -222,17 +276,21 @@ export function RegisterClient({
     const cleanedContracts = parseContracts(data.contracts_text);
     const result = await createSubmission({
       app_name: data.app_name.trim(),
-      slug: (data.slug || slugify(data.app_name)).trim(),
+      slug: currentSlug,
       pitch: data.pitch.trim(),
       track: data.track || null,
       contracts: cleanedContracts,
       live_url: data.live_url.trim(),
       repo_url: data.repo_url.trim() || null,
       notes: data.notes.trim(),
+      changelog: data.changelog.trim(),
     });
     if (!result.ok) {
       setErr(result.message);
       setStatus("err");
+      if (result.code === "missing_changelog") {
+        setCollidingSlug(currentSlug);
+      }
       return;
     }
     setStatus("ok");
@@ -242,25 +300,47 @@ export function RegisterClient({
   };
 
   if (status === "ok") {
+    const finalSlug = data.slug || slugify(data.app_name);
     return (
       <>
         <Hero
           size="lg"
-          sub={`${data.app_name} ${isEditing ? "updated" : "queued"}. measurement starts at the next snapshot.`}
+          sub={`${data.app_name} is queued for cycle ${currentCycleLabel}. snapshot fires in ${countdown}.`}
         >
-          saved.
+          submission landed.
         </Hero>
-        <div className="mt-7 border-t border-hair pt-4 font-mono text-xs leading-[1.6] text-faint">
-          {"// "}submissions/{data.slug || slugify(data.app_name)} — status:
-          draft.
-          <br />
-          {"// "}resubmit anytime before the snapshot to overwrite.
+        <div className="mt-7 border-t border-hair pt-2">
+          <Field label="app name" value={data.app_name || undefined} />
+          <Field
+            label="slug"
+            value={finalSlug || undefined}
+            hint={`garage.aboutcircles.com/p/${finalSlug || "________"}`}
+          />
+          <Field
+            label="live link"
+            value={
+              data.live_url ? (
+                <a
+                  href={data.live_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border-b border-ink text-ink hover:bg-ghost"
+                >
+                  {data.live_url}
+                </a>
+              ) : undefined
+            }
+          />
+        </div>
+        <div className="mt-5 font-mono text-xs leading-[1.6] text-faint">
+          {"// "}submissions/{finalSlug} — status: draft. resubmit anytime
+          before the snapshot to overwrite.
         </div>
         <div className="mt-7 flex items-center gap-2.5">
-          <Btn primary href="/leaderboard">
-            see leaderboard →
+          <Btn primary href="/dashboard">
+            ← back to dashboard
           </Btn>
-          <Btn href="/dashboard">← back to dashboard</Btn>
+          <Btn href="/register">edit again →</Btn>
         </div>
       </>
     );
@@ -278,11 +358,19 @@ export function RegisterClient({
           sub={
             isEditing
               ? "You're editing your submission for this cycle. Each save replaces the current entry. The latest version on Friday at 23:59 CET is what we judge."
-              : "Each submit replaces your current entry. The latest version on Friday at 23:59 CET is what we judge."
+              : isResubmit
+                ? `Picking up from cycle ${prefill?.cycle ?? ""}. Update the entry, then save for cycle ${currentCycleLabel}.`
+                : "Each submit replaces your current entry. The latest version on Friday at 23:59 CET is what we judge."
           }
         >
-          {isEditing ? "editing" : "new submission"}
-          <span className="text-faint">{isEditing ? "" : ".draft"}</span>
+          {isEditing
+            ? "editing"
+            : isResubmit
+              ? `resubmitting ${prefill?.app_name ?? ""}`
+              : "new submission"}
+          <span className="text-faint">
+            {isEditing || isResubmit ? "" : ".draft"}
+          </span>
         </Hero>
         <Steps all={STEPS} current={step} />
       </div>
@@ -329,7 +417,12 @@ export function RegisterClient({
             value={data.slug}
             onChange={setSlug}
             placeholder={draft.slug}
-            hint={`garage.aboutcircles.com/p/${data.slug || slugify(data.app_name) || "________"}`}
+            readOnly={isResubmit}
+            hint={
+              isResubmit
+                ? `locked · same project across cycles · garage.aboutcircles.com/p/${data.slug || "________"}`
+                : `garage.aboutcircles.com/p/${data.slug || slugify(data.app_name) || "________"}`
+            }
           />
           <Textarea
             name="pitch"
@@ -420,6 +513,23 @@ export function RegisterClient({
               rows={6}
             />
           </div>
+
+          {hasPastEntries && (
+            <div className="mt-4">
+              <Textarea
+                name="changelog"
+                label="what changed this cycle"
+                required
+                value={data.changelog}
+                onChange={setText("changelog")}
+                placeholder={
+                  "shipped onboarding flow · fixed mint bug · added invite links"
+                }
+                hint="required · this slug shipped in a past cycle — what's new for the judges this time around?"
+                rows={5}
+              />
+            </div>
+          )}
         </Section>
       )}
 
@@ -446,11 +556,7 @@ export function RegisterClient({
                 disabled={status === "submitting" || !allChecksOk}
                 className={DISABLED_CLS}
               >
-                {status === "submitting"
-                  ? "writing..."
-                  : isEditing
-                    ? "save changes →"
-                    : "submit →"}
+                {submitLabel}
               </Btn>
             </div>
             {!allChecksOk && (
@@ -525,11 +631,23 @@ export function RegisterClient({
                 ↳ no notes — judges will go straight to the live link.
               </div>
             )}
+            {hasPastEntries && (
+              <div className="mt-3.5 bg-ghost px-3 py-2.5 font-mono text-xs leading-[1.7]">
+                <div className="text-faint"># what changed this cycle</div>
+                <div className="whitespace-pre-wrap">
+                  {data.changelog.trim() || (
+                    <span className="italic text-faint">
+                      — nothing yet — required for resubmit —
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </Section>
         </>
       )}
 
-      {err && (
+      {err && !isReview && (
         <div className="mt-4 font-mono text-[11px] text-ink">! {err}</div>
       )}
 
@@ -561,11 +679,7 @@ export function RegisterClient({
             disabled={status === "submitting" || !allChecksOk}
             className={DISABLED_CLS}
           >
-            {status === "submitting"
-              ? "writing..."
-              : isEditing
-                ? "save changes →"
-                : "submit →"}
+            {submitLabel}
           </Btn>
         )}
       </div>

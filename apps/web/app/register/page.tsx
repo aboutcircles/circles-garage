@@ -8,9 +8,14 @@ import { createClient } from "@/lib/supabase/server";
 import { Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
 import { RegisterClient, type SubmissionRow } from "./register-client";
 
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
   const d = content.draft;
   const cycleInfo = getCycleInfo();
+  const { from } = await searchParams;
 
   const supabase = await createClient();
   const {
@@ -18,6 +23,8 @@ export default async function RegisterPage() {
   } = await supabase.auth.getUser();
 
   let existingSubmission: SubmissionRow | null = null;
+  let prefill: SubmissionRow | null = null;
+  let hasPastEntriesWithSameSlug = false;
 
   if (user) {
     // Require a builder row before letting anyone fill out a submission —
@@ -38,11 +45,49 @@ export default async function RegisterPage() {
       .eq("cycle", cycleInfo.cycle)
       .maybeSingle();
     existingSubmission = (data as SubmissionRow | null) ?? null;
+
+    // Resubmit pre-fill: only honour `?from=` when there's no current-cycle
+    // row yet (otherwise we'd clobber the edit-in-progress).
+    if (from && !existingSubmission) {
+      const { data: seed, error: seedErr } = await supabase
+        .from("submissions")
+        .select(
+          "app_name, slug, pitch, track, status, cycle, live_url, repo_url, contracts, readme",
+        )
+        .eq("user_id", user.id)
+        .eq("id", from)
+        .maybeSingle();
+      if (seedErr) {
+        // Silently fall through to "new submission" — a malformed `from`
+        // shouldn't 500, but we log so it's visible if the dashboard ever
+        // hands us a bad id.
+        console.error("register prefill seed failed:", seedErr);
+      }
+      const seedRow = (seed as SubmissionRow | null) ?? null;
+      if (seedRow && seedRow.cycle < cycleInfo.cycle) {
+        prefill = seedRow;
+      }
+    }
+
+    // If a current-cycle row exists, also check whether the same slug has
+    // any past-cycle siblings — the changelog field becomes required then.
+    if (existingSubmission?.slug) {
+      const { data: priors } = await supabase
+        .from("submissions")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("slug", existingSubmission.slug)
+        .neq("cycle", cycleInfo.cycle)
+        .limit(1);
+      hasPastEntriesWithSameSlug = (priors?.length ?? 0) > 0;
+    }
   }
 
-  const breadcrumb = existingSubmission
-    ? "dashboard / mini-apps / editing"
-    : "dashboard / mini-apps / new submission";
+  const breadcrumb = prefill
+    ? `dashboard / mini-apps / resubmit ${prefill.app_name}`
+    : existingSubmission
+      ? "dashboard / mini-apps / editing"
+      : "dashboard / mini-apps / new submission";
 
   return (
     <Page
@@ -69,7 +114,14 @@ export default async function RegisterPage() {
           {!user ? (
             <SignInPrompt intent="submit" next="/register" />
           ) : (
-            <RegisterClient draft={d} existing={existingSubmission} />
+            <RegisterClient
+              draft={d}
+              existing={existingSubmission}
+              prefill={prefill}
+              currentCycleLabel={cycleInfo.cycleLabel}
+              countdown={cycleInfo.countdownLabel}
+              hasPastEntriesWithSameSlug={hasPastEntriesWithSameSlug}
+            />
           )}
         </Pane>
 

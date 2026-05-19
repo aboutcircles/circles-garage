@@ -181,26 +181,43 @@ export default async function DashboardPage() {
     >
       <Grid cols="1.4fr 1fr" gap={12} fill>
         <Pane title="dashboard" hint={`cycle ${cycleInfo.cycleLabel}`} span={2}>
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          {!hasCurrent && pastSubs.length > 0 ? (
             <Hero
               size="md"
-              sub={
-                hasCurrent
-                  ? `you've submitted for cycle ${cycleInfo.cycleLabel}. snapshot fires in ${cycleInfo.countdownLabel}.`
-                  : `cycle ${cycleInfo.cycleLabel} closes in ${cycleInfo.countdownLabel} · submit a mini-app to be eligible.`
+              sub={`you have ${pastSubs.length} past submission${pastSubs.length === 1 ? "" : "s"}. resubmit one for this cycle, or start fresh. snapshot fires in ${cycleInfo.countdownLabel}.`}
+              ctas={
+                <>
+                  <Btn primary href={`/register?from=${pastSubs[0]!.id}`}>
+                    resubmit {pastSubs[0]!.app_name} →
+                  </Btn>
+                  <Btn href="/register">+ new mini-app</Btn>
+                </>
               }
             >
-              hello, @{githubLogin}.
+              cycle {cycleInfo.cycleLabel} is open.
             </Hero>
-            <div className="flex gap-2">
-              {!hasCurrent && (
-                <Btn primary href="/register">
-                  + submit mini-app
-                </Btn>
-              )}
-              <Btn href="/leaderboard">leaderboard</Btn>
+          ) : (
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <Hero
+                size="md"
+                sub={
+                  hasCurrent
+                    ? `you've submitted for cycle ${cycleInfo.cycleLabel}. snapshot fires in ${cycleInfo.countdownLabel}.`
+                    : `cycle ${cycleInfo.cycleLabel} closes in ${cycleInfo.countdownLabel} · submit a mini-app to be eligible.`
+                }
+              >
+                hello, @{githubLogin}.
+              </Hero>
+              <div className="flex gap-2">
+                {!hasCurrent && (
+                  <Btn primary href="/register">
+                    + submit mini-app
+                  </Btn>
+                )}
+                <Btn href="/leaderboard">leaderboard</Btn>
+              </div>
             </div>
-          </div>
+          )}
         </Pane>
 
         <Pane
@@ -214,14 +231,24 @@ export default async function DashboardPage() {
               hint="this cycle"
             >
               {currentCycleSubs.map((s) => (
-                <SubmissionRowView key={s.id} sub={s} />
+                <SubmissionRowView
+                  key={s.id}
+                  sub={s}
+                  isCurrentCycle
+                  currentCycleLabel={cycleInfo.cycleLabel}
+                />
               ))}
             </Section>
           )}
           {pastSubs.length > 0 && (
             <Section num="02" label="past cycles" hint="archive">
               {pastSubs.map((s) => (
-                <SubmissionRowView key={s.id} sub={s} />
+                <SubmissionRowView
+                  key={s.id}
+                  sub={s}
+                  isCurrentCycle={false}
+                  currentCycleLabel={cycleInfo.cycleLabel}
+                />
               ))}
             </Section>
           )}
@@ -241,7 +268,16 @@ export default async function DashboardPage() {
   );
 }
 
-function SubmissionRowView({ sub }: { sub: SubmissionRow }) {
+function SubmissionRowView({
+  sub,
+  isCurrentCycle,
+  currentCycleLabel,
+}: {
+  sub: SubmissionRow;
+  isCurrentCycle: boolean;
+  currentCycleLabel: string;
+}) {
+  const cycleNum = String(sub.cycle).padStart(2, "0");
   return (
     <div className="grid items-start gap-3 border-b border-dotted border-hair py-3 last:border-b-0">
       <div className="flex flex-wrap items-baseline gap-2">
@@ -249,11 +285,13 @@ function SubmissionRowView({ sub }: { sub: SubmissionRow }) {
           {sub.app_name}
         </span>
         <span className="font-mono text-[11px] text-faint">/{sub.slug}</span>
-        <Pill className="ml-auto">{sub.status}</Pill>
+        <Pill className="ml-auto">
+          {isCurrentCycle ? sub.status : `cycle ${cycleNum} · closed`}
+        </Pill>
       </div>
       <div className="font-mono text-xs text-faint">{sub.pitch}</div>
       <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] text-faint">
-        <span>cycle {String(sub.cycle).padStart(2, "0")}</span>
+        <span>cycle {cycleNum}</span>
         {sub.track && (
           <>
             <span>·</span>
@@ -281,6 +319,16 @@ function SubmissionRowView({ sub }: { sub: SubmissionRow }) {
               repo ↗
             </a>
           </>
+        )}
+        <span>·</span>
+        {isCurrentCycle ? (
+          <Btn sm href="/register">
+            edit →
+          </Btn>
+        ) : (
+          <Btn sm primary href={`/register?from=${sub.id}`}>
+            resubmit for cycle {currentCycleLabel} →
+          </Btn>
         )}
       </div>
     </div>

@@ -15,24 +15,16 @@ export type SubmissionInput = {
   changelog: string;
 };
 
-export type PastConflict = {
-  id: string;
-  app_name: string;
-  cycle: number;
-};
-
 export type SubmissionResult =
   | { ok: true; cycle: number }
   | {
       ok: false;
-      code: "unauthenticated" | "no_builder" | "unknown";
+      code:
+        | "unauthenticated"
+        | "no_builder"
+        | "missing_changelog"
+        | "unknown";
       message: string;
-    }
-  | {
-      ok: false;
-      code: "missing_changelog";
-      message: string;
-      past: PastConflict;
     };
 
 export async function createSubmission(
@@ -69,11 +61,12 @@ export async function createSubmission(
 
   // If this slug already exists in a past cycle for this user, treat it as
   // a resubmit and require the builder to write what changed this cycle.
-  // Fetch the latest such entry so the client can show "looks like X from
-  // cycle N — resubmit it?" rather than a bare error.
+  // The message names the past entry so the user knows what they're
+  // colliding with and can pick a recovery path (resubmit from dashboard,
+  // or change the slug here).
   const { data: pastWithSlug } = await supabase
     .from("submissions")
-    .select("id, app_name, cycle")
+    .select("app_name, cycle")
     .eq("user_id", user.id)
     .eq("slug", input.slug)
     .neq("cycle", cycle)
@@ -87,8 +80,7 @@ export async function createSubmission(
     return {
       ok: false,
       code: "missing_changelog",
-      message: `looks like a resubmit of ${past.app_name} (cycle ${pastCycleLabel}). add a "what changed" note below to continue, or change the slug if this is a separate project.`,
-      past: { id: past.id, app_name: past.app_name, cycle: past.cycle },
+      message: `slug "${input.slug}" was used by ${past.app_name} in cycle ${pastCycleLabel}. add a "what changed this cycle" note to resubmit it, or change the slug above for a separate project.`,
     };
   }
 

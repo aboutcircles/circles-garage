@@ -11,7 +11,7 @@ import {
   Steps,
   Textarea,
 } from "@workspace/ui/kit";
-import { createSubmission, type PastConflict } from "./actions";
+import { createSubmission } from "./actions";
 import type { Draft } from "@/lib/content";
 
 type FormState = {
@@ -195,16 +195,15 @@ export function RegisterClient({
     "idle",
   );
   const [err, setErr] = useState<string | null>(null);
-  // Server detected a past submission with this slug after the user came in
-  // via `mode === "new"`. We surface the past entry so the user can either
-  // resubmit it (proper pre-fill flow) or change the slug to keep them
-  // separate; the changelog field becomes visible + required either way.
-  const [pastConflict, setPastConflict] = useState<PastConflict | null>(null);
+  // Latched true when the server rejects with `missing_changelog`. Surfaces
+  // the changelog field so the user can act on the error message without
+  // needing structured recovery UI. Cleared on the next submit attempt.
+  const [slugCollidesWithPast, setSlugCollidesWithPast] = useState(false);
 
   const isEditing = mode === "editing";
   const isResubmit = mode === "resubmit";
   const hasPastEntries =
-    isResubmit || hasPastEntriesWithSameSlug || pastConflict !== null;
+    isResubmit || hasPastEntriesWithSameSlug || slugCollidesWithPast;
 
   const setName = (v: string) => {
     setData((d) => ({
@@ -269,7 +268,7 @@ export function RegisterClient({
   const submit = async () => {
     setStatus("submitting");
     setErr(null);
-    setPastConflict(null);
+    setSlugCollidesWithPast(false);
     const cleanedContracts = parseContracts(data.contracts_text);
     const result = await createSubmission({
       app_name: data.app_name.trim(),
@@ -286,13 +285,7 @@ export function RegisterClient({
       setErr(result.message);
       setStatus("err");
       if (result.code === "missing_changelog") {
-        setPastConflict(result.past);
-        // Send the user to the step where the changelog field lives so they
-        // can act on the recovery prompt without hunting for it.
-        setStep(2);
-        if (typeof window !== "undefined") {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+        setSlugCollidesWithPast(true);
       }
       return;
     }
@@ -576,28 +569,8 @@ export function RegisterClient({
               </div>
             )}
             {err && (
-              <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px]">
-                <div
-                  className={
-                    pastConflict ? "font-bold text-ember" : "text-ink"
-                  }
-                >
-                  ! {err}
-                </div>
-                {pastConflict && (
-                  <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
-                    <Btn
-                      sm
-                      primary
-                      href={`/register?from=${pastConflict.id}`}
-                    >
-                      yes — resubmit {pastConflict.app_name} →
-                    </Btn>
-                    <Btn sm onClick={() => setStep(0)}>
-                      different project · change slug ↑
-                    </Btn>
-                  </div>
-                )}
+              <div className="mt-3 border-t border-hair pt-3 font-mono text-[11px] text-ink">
+                ! {err}
               </div>
             )}
           </div>
@@ -670,22 +643,8 @@ export function RegisterClient({
         </>
       )}
 
-      {err && (
-        <div className="mt-4 font-mono text-[11px]">
-          <div className={pastConflict ? "font-bold text-ember" : "text-ink"}>
-            ! {err}
-          </div>
-          {pastConflict && (
-            <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
-              <Btn sm primary href={`/register?from=${pastConflict.id}`}>
-                yes — resubmit {pastConflict.app_name} →
-              </Btn>
-              <span className="text-faint">
-                or change the slug above to keep them separate.
-              </span>
-            </div>
-          )}
-        </div>
+      {err && !isReview && (
+        <div className="mt-4 font-mono text-[11px] text-ink">! {err}</div>
       )}
 
       <div className="mt-7 flex items-center gap-2.5">

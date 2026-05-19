@@ -49,7 +49,7 @@ export default async function RegisterPage({
     // Resubmit pre-fill: only honour `?from=` when there's no current-cycle
     // row yet (otherwise we'd clobber the edit-in-progress).
     if (from && !existingSubmission) {
-      const { data: seed } = await supabase
+      const { data: seed, error: seedErr } = await supabase
         .from("submissions")
         .select(
           "app_name, slug, pitch, track, status, cycle, live_url, repo_url, contracts, readme",
@@ -57,6 +57,12 @@ export default async function RegisterPage({
         .eq("user_id", user.id)
         .eq("id", from)
         .maybeSingle();
+      if (seedErr) {
+        // Silently fall through to "new submission" — a malformed `from`
+        // shouldn't 500, but we log so it's visible if the dashboard ever
+        // hands us a bad id.
+        console.error("register prefill seed failed:", seedErr);
+      }
       const seedRow = (seed as SubmissionRow | null) ?? null;
       if (seedRow && seedRow.cycle < cycleInfo.cycle) {
         prefill = seedRow;

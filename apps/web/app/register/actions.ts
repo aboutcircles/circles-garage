@@ -63,8 +63,9 @@ export async function createSubmission(
   // a resubmit and require the builder to write what changed this cycle.
   // The message names the past entry so the user knows what they're
   // colliding with and can pick a recovery path (resubmit from dashboard,
-  // or change the slug here).
-  const { data: pastWithSlug } = await supabase
+  // or change the slug here). If the lookup itself fails we fail closed
+  // rather than silently bypassing the changelog gate.
+  const { data: pastWithSlug, error: pastErr } = await supabase
     .from("submissions")
     .select("app_name, cycle")
     .eq("user_id", user.id)
@@ -72,6 +73,16 @@ export async function createSubmission(
     .neq("cycle", cycle)
     .order("cycle", { ascending: false })
     .limit(1);
+
+  if (pastErr) {
+    console.error("submissions past-slug lookup failed:", pastErr);
+    return {
+      ok: false,
+      code: "unknown",
+      message:
+        "we couldn't validate your submission. try again — refresh the page if it keeps failing.",
+    };
+  }
 
   const past = pastWithSlug?.[0];
 

@@ -195,15 +195,20 @@ export function RegisterClient({
     "idle",
   );
   const [err, setErr] = useState<string | null>(null);
-  // Latched true when the server rejects with `missing_changelog`. Surfaces
-  // the changelog field so the user can act on the error message without
-  // needing structured recovery UI. Cleared on the next submit attempt.
-  const [slugCollidesWithPast, setSlugCollidesWithPast] = useState(false);
+  // The slug that's known to collide with a past-cycle entry — either
+  // because the page-load query found a sibling on the current slug, or
+  // because the server flagged it on a previous submit. Drives changelog
+  // visibility via slug equality so editing the slug clears the gate
+  // without needing another round-trip.
+  const [collidingSlug, setCollidingSlug] = useState<string | null>(
+    hasPastEntriesWithSameSlug ? (seed?.slug ?? null) : null,
+  );
 
   const isEditing = mode === "editing";
   const isResubmit = mode === "resubmit";
+  const currentSlug = (data.slug || slugify(data.app_name)).trim();
   const hasPastEntries =
-    isResubmit || hasPastEntriesWithSameSlug || slugCollidesWithPast;
+    isResubmit || (collidingSlug !== null && currentSlug === collidingSlug);
 
   const setName = (v: string) => {
     setData((d) => ({
@@ -268,11 +273,10 @@ export function RegisterClient({
   const submit = async () => {
     setStatus("submitting");
     setErr(null);
-    setSlugCollidesWithPast(false);
     const cleanedContracts = parseContracts(data.contracts_text);
     const result = await createSubmission({
       app_name: data.app_name.trim(),
-      slug: (data.slug || slugify(data.app_name)).trim(),
+      slug: currentSlug,
       pitch: data.pitch.trim(),
       track: data.track || null,
       contracts: cleanedContracts,
@@ -285,7 +289,7 @@ export function RegisterClient({
       setErr(result.message);
       setStatus("err");
       if (result.code === "missing_changelog") {
-        setSlugCollidesWithPast(true);
+        setCollidingSlug(currentSlug);
       }
       return;
     }

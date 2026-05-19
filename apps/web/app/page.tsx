@@ -253,16 +253,20 @@ export default async function LandingPage() {
             {lbCount === 0 ? (
               <div className="py-2 font-mono text-[13px] leading-[1.7]">
                 <div className="text-faint">
-                  {programOpen
-                    ? `no entries yet · cycle ${cycle} is open.`
-                    : `cycle ${cycle} opens ${startsAtLabel}.`}
+                  {live && live.submissions > 0 && programOpen
+                    ? `no ranks yet · ${live.submissions} submitted · cycle ${cycle} is open.`
+                    : programOpen
+                      ? `no entries yet · cycle ${cycle} is open.`
+                      : `cycle ${cycle} opens ${startsAtLabel}.`}
                 </div>
                 <div className="mt-2.5">
                   <a
                     href="/signup"
                     className="border-b border-ink text-ink hover:bg-ghost"
                   >
-                    be the first → sign up
+                    {live && live.submissions > 0
+                      ? "join them → sign up"
+                      : "be the first → sign up"}
                   </a>
                 </div>
               </div>

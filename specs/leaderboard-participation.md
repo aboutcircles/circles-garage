@@ -154,7 +154,7 @@ needed.
 
 ### Participation pane layout
 
-```
+```text
 ┌─ PARTICIPATION ────────────── live · 60s cache ┐
 │ submissions total            7                  │
 │ ─────────────────────────────────────────────── │

@@ -105,9 +105,11 @@ export default async function LeaderboardPage() {
           {empty ? (
             <div className="py-6 font-mono text-[13px] leading-[1.7]">
               <div className="text-faint">
-                {programOpen
-                  ? `no entries yet · cycle ${cycle} is open. first snapshot in `
-                  : `cycle ${cycle} opens ${startsAtLabel}. first snapshot in `}
+                {stats && stats.submissionsTotal > 0 && programOpen
+                  ? `no ranks yet · ${stats.submissionsTotal} submitted · cycle ${cycle} is open. first snapshot in `
+                  : programOpen
+                    ? `no entries yet · cycle ${cycle} is open. first snapshot in `
+                    : `cycle ${cycle} opens ${startsAtLabel}. first snapshot in `}
                 <LiveCountdown targetMs={cycleInfo.endsAtMs} />.
               </div>
               <div className="mt-4 flex items-center gap-2.5">

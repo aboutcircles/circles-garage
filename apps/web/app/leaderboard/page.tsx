@@ -1,12 +1,53 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
-import { getCycleInfo } from "@/lib/cycle";
+import { getCycleInfo, TOTAL_CYCLES } from "@/lib/cycle";
+import { createClient } from "@/lib/supabase/server";
 import { LiveCountdown } from "@/components/live-countdown";
 import { Btn, Grid, Page, Pane, S, SDot, Table } from "@workspace/ui/kit";
 
 export const revalidate = 60;
 
-export default function LeaderboardPage() {
+type ProgramStats = {
+  buildersTotal: number;
+  submissionsTotal: number;
+  submissionsByCycle: Record<number, number>;
+};
+
+async function fetchProgramStats(
+  supabase: SupabaseClient,
+): Promise<ProgramStats | null> {
+  try {
+    const { data, error } = await supabase.rpc("get_program_stats");
+    if (error || !Array.isArray(data) || data.length === 0) return null;
+    const row = data[0] as {
+      builders_total: number | string;
+      submissions_total: number | string;
+      submissions_by_cycle: Record<string, number | string> | null;
+    };
+    const byCycle: Record<number, number> = {};
+    const raw = row.submissions_by_cycle ?? {};
+    for (const [k, v] of Object.entries(raw)) {
+      const cycleNum = Number(k);
+      const count = Number(v);
+      if (Number.isInteger(cycleNum) && cycleNum >= 1 && cycleNum <= TOTAL_CYCLES) {
+        byCycle[cycleNum] = count;
+      }
+    }
+    return {
+      buildersTotal: Number(row.builders_total ?? 0),
+      submissionsTotal: Number(row.submissions_total ?? 0),
+      submissionsByCycle: byCycle,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function LeaderboardPage() {
   const cycleInfo = getCycleInfo();
+  const supabase = await createClient();
+  const stats = await fetchProgramStats(supabase);
+  const currentCycle = cycleInfo.cycle;
   const cycle = cycleInfo.cycleLabel;
   const rows = content.leaderboard;
   const empty = rows.length === 0;
@@ -36,30 +77,39 @@ export default function LeaderboardPage() {
           />
           <SDot />
           <S k="ends" v={`${cycleInfo.endsAtLabel} 23:59 CET`} />
-          <SDot />
-          <S k="builders" v={String(rows.length)} />
         </>
       }
       breadcrumb={`leaderboard / cycle ${cycle} / ${programOpen ? "open" : "pre-launch"}`}
     >
       <Grid cols="1.6fr 1fr" gap={12} fill>
-        {/* main table */}
-        <Pane
-          title="who moved the needle"
-          hint={
-            empty
-              ? programOpen
-                ? `cycle ${cycle} · live`
-                : `cycle ${cycle} opens ${startsAtLabel}`
-              : `rank by ↓ judges' score · ${rows.length} builders`
-          }
+        {/* left column */}
+        <div
+          className="grid min-h-0 gap-3"
+          style={{ gridTemplateRows: "auto 1fr" }}
         >
+          <ParticipationPane
+            stats={stats}
+            currentCycle={currentCycle}
+            isOver={cycleInfo.isOver}
+          />
+          <Pane
+            title="who moved the needle"
+            hint={
+              empty
+                ? programOpen
+                  ? `cycle ${cycle} · live`
+                  : `cycle ${cycle} opens ${startsAtLabel}`
+                : `rank by ↓ judges' score · ${rows.length} builders`
+            }
+          >
           {empty ? (
             <div className="py-6 font-mono text-[13px] leading-[1.7]">
               <div className="text-faint">
-                {programOpen
-                  ? `no entries yet · cycle ${cycle} is open. first snapshot in `
-                  : `cycle ${cycle} opens ${startsAtLabel}. first snapshot in `}
+                {stats && stats.submissionsTotal > 0 && programOpen
+                  ? `no ranks yet · ${stats.submissionsTotal} submitted · cycle ${cycle} is open. first snapshot in `
+                  : programOpen
+                    ? `no entries yet · cycle ${cycle} is open. first snapshot in `
+                    : `cycle ${cycle} opens ${startsAtLabel}. first snapshot in `}
                 <LiveCountdown targetMs={cycleInfo.endsAtMs} />.
               </div>
               <div className="mt-4 flex items-center gap-2.5">
@@ -136,7 +186,8 @@ export default function LeaderboardPage() {
               </div>
             </>
           )}
-        </Pane>
+          </Pane>
+        </div>
 
         {/* right column */}
         <div
@@ -256,5 +307,67 @@ export default function LeaderboardPage() {
         </div>
       </Grid>
     </Page>
+  );
+}
+
+function ParticipationPane({
+  stats,
+  currentCycle,
+  isOver,
+}: {
+  stats: ProgramStats | null;
+  currentCycle: number;
+  isOver: boolean;
+}) {
+  const cycles = Array.from({ length: TOTAL_CYCLES }, (_, i) => i + 1);
+  const hint = stats ? "live · 60s cache" : "static";
+  const submissionsTotal = stats?.submissionsTotal ?? 0;
+  const byCycle = stats?.submissionsByCycle ?? {};
+
+  return (
+    <Pane title="participation" hint={hint}>
+      <div
+        className="font-mono text-[13px]"
+        style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "6px 12px" }}
+      >
+        <span className="text-faint">submissions total</span>
+        <span className="font-bold">{submissionsTotal}</span>
+        <span className="col-span-2 border-t border-hair" />
+        {cycles.map((n) => {
+          const isCurrent = stats !== null && !isOver && n === currentCycle;
+          const isPast = stats === null || isOver || n < currentCycle;
+          const count = byCycle[n] ?? 0;
+          if (isCurrent) {
+            return (
+              <div key={n} className="contents">
+                <span className="font-bold text-ink">
+                  <span className="mr-1.5 text-ember">●</span>
+                  cycle {String(n).padStart(2, "0")}
+                  <span className="ml-1.5 text-[11px] font-normal text-ember">live</span>
+                </span>
+                <span className="font-bold">{count}</span>
+              </div>
+            );
+          }
+          if (isPast) {
+            return (
+              <div key={n} className="contents">
+                <span>cycle {String(n).padStart(2, "0")}</span>
+                <span>{count}</span>
+              </div>
+            );
+          }
+          return (
+            <div key={n} className="contents">
+              <span className="text-faint">
+                cycle {String(n).padStart(2, "0")}
+                <span className="ml-1.5 text-[11px]">soon</span>
+              </span>
+              <span className="text-faint">—</span>
+            </div>
+          );
+        })}
+      </div>
+    </Pane>
   );
 }

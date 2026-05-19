@@ -12,6 +12,13 @@ export type SubmissionInput = {
   live_url: string;
   repo_url: string | null;
   notes: string;
+  changelog: string;
+};
+
+export type PastConflict = {
+  id: string;
+  app_name: string;
+  cycle: number;
 };
 
 export type SubmissionResult =
@@ -20,6 +27,12 @@ export type SubmissionResult =
       ok: false;
       code: "unauthenticated" | "no_builder" | "unknown";
       message: string;
+    }
+  | {
+      ok: false;
+      code: "missing_changelog";
+      message: string;
+      past: PastConflict;
     };
 
 export async function createSubmission(
@@ -54,10 +67,39 @@ export async function createSubmission(
 
   const cycle = getCycleInfo().cycle;
 
+  // If this slug already exists in a past cycle for this user, treat it as
+  // a resubmit and require the builder to write what changed this cycle.
+  // Fetch the latest such entry so the client can show "looks like X from
+  // cycle N — resubmit it?" rather than a bare error.
+  const { data: pastWithSlug } = await supabase
+    .from("submissions")
+    .select("id, app_name, cycle")
+    .eq("user_id", user.id)
+    .eq("slug", input.slug)
+    .neq("cycle", cycle)
+    .order("cycle", { ascending: false })
+    .limit(1);
+
+  const past = pastWithSlug?.[0];
+
+  if (past && input.changelog.trim() === "") {
+    const pastCycleLabel = String(past.cycle).padStart(2, "0");
+    return {
+      ok: false,
+      code: "missing_changelog",
+      message: `looks like a resubmit of ${past.app_name} (cycle ${pastCycleLabel}). add a "what changed" note below to continue, or change the slug if this is a separate project.`,
+      past: { id: past.id, app_name: past.app_name, cycle: past.cycle },
+    };
+  }
+
   // Note: `screenshots` and `measures` columns still exist in the schema
   // but are no longer collected by the form. Omit them from the upsert
   // payload so resubmits don't clobber any future server-set values; the
   // column defaults (`'{}'`) fire on first insert.
+  const readme = input.changelog.trim()
+    ? { notes: input.notes, changelog: input.changelog }
+    : { notes: input.notes };
+
   const { error } = await supabase.from("submissions").upsert(
     {
       user_id: user.id,
@@ -70,13 +112,19 @@ export async function createSubmission(
       contracts: input.contracts,
       live_url: input.live_url,
       repo_url: input.repo_url,
-      readme: { notes: input.notes },
+      readme,
     },
     { onConflict: "user_id,cycle" },
   );
 
   if (error) {
-    return { ok: false, code: "unknown", message: error.message };
+    console.error("submissions upsert failed:", error);
+    return {
+      ok: false,
+      code: "unknown",
+      message:
+        "we couldn't save your submission. try again — refresh the page if it keeps failing.",
+    };
   }
 
   return { ok: true, cycle };

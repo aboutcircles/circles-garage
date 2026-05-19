@@ -38,15 +38,15 @@ async function fetchLiveCounters(
   supabase: SupabaseClient,
 ): Promise<LiveCounters | null> {
   try {
-    const { data, error } = await supabase.rpc("get_landing_counters");
+    const { data, error } = await supabase.rpc("get_program_stats");
     if (error || !Array.isArray(data) || data.length === 0) return null;
     const row = data[0] as {
-      builders_count: number | string;
-      submissions_count: number | string;
+      builders_total: number | string;
+      submissions_total: number | string;
     };
     return {
-      builders: Number(row.builders_count ?? 0),
-      submissions: Number(row.submissions_count ?? 0),
+      builders: Number(row.builders_total ?? 0),
+      submissions: Number(row.submissions_total ?? 0),
     };
   } catch {
     return null;
@@ -101,7 +101,7 @@ export default async function LandingPage() {
     if (c.k === "grand finale") return { ...c, v: cycleInfo.finaleLabel };
     return c;
   });
-  const countersHint = live ? "live · 15s refresh" : "static";
+  const countersHint = live ? "live" : "static";
 
   return (
     <Page
@@ -242,7 +242,13 @@ export default async function LandingPage() {
 
           <Pane
             title={`leaderboard · cycle ${cycle}`}
-            hint={lbCount === 0 ? "no entries yet" : `top 5 of ${lbCount}`}
+            hint={
+              lbCount > 0
+                ? `top 5 of ${lbCount}`
+                : live && live.submissions > 0
+                  ? `no ranks yet · ${live.submissions} submitted`
+                  : "no entries yet"
+            }
           >
             {lbCount === 0 ? (
               <div className="py-2 font-mono text-[13px] leading-[1.7]">

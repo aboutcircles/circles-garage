@@ -397,9 +397,6 @@ export default async function LandingPage() {
                   return (
                     <div key={i}>
                       · <span className="text-faint">{b.text}</span>
-                      <span className="ml-1.5 text-[10px] uppercase tracking-[0.18em] text-faint">
-                        [soon]
-                      </span>
                     </div>
                   );
                 }

@@ -223,6 +223,11 @@ export const content: Content = {
         href: "https://vimeo.com/1193867453?share=copy&fl=sv&fe=ci",
       },
       {
+        text: "build with AI · skill.md",
+        hrefLabel: "skill.md",
+        href: "https://garage.aboutcircles.com/SKILL.md",
+      },
+      {
         text: "builder telegram",
         hrefLabel: "join the group",
         href: "https://t.me/about_circles/499",

@@ -218,6 +218,11 @@ export const content: Content = {
     ],
     bulletin: [
       {
+        text: "workshop 01 · watch recording",
+        hrefLabel: "watch recording",
+        href: "https://vimeo.com/1193867453?share=copy&fl=sv&fe=ci",
+      },
+      {
         text: "builder telegram",
         hrefLabel: "join the group",
         href: "https://t.me/about_circles/499",

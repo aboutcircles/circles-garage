@@ -147,7 +147,7 @@ export default async function DashboardPage() {
                   + submit mini-app
                 </Link>
                 <a
-                  href="https://docs.aboutcircles.com/miniapps/what-are-circles-mini-apps.md"
+                  href="https://docs.aboutcircles.com/miniapps#what-are-circles-mini-apps"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono text-xs text-faint underline underline-offset-[3px] hover:text-ink"

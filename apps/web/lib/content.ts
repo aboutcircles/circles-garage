@@ -239,7 +239,7 @@ export const content: Content = {
         href: "https://t.me/about_circles/499",
       },
       {
-        text: "office hours · every sunday · rsvp on luma",
+        text: "office hours · every friday · rsvp on luma",
         hrefLabel: "rsvp on luma",
         href: "https://luma.com/5ocjvmzs",
       },

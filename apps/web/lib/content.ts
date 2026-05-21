@@ -124,6 +124,7 @@ export type SignupForm = {
   submit: string;
   consent: string;
   consentHref: string;
+  termsHref: string;
   benefits: readonly string[];
   benefitsMuted: readonly string[];
   notice: SignupNotice;
@@ -159,16 +160,16 @@ export type Content = {
 
 export const content: Content = {
   // ── program meta ────────────────────────────────────────────────
-  // 6-week program. Cycles run Friday→Friday. Cycle 01 is a short
-  // opener (Mon 18 May → Fri 22 May). Snapshot + prizes + builder Q&A
-  // all happen Friday 23:59 CET.
+  // 6-week program. Cycles run Monday→Sunday (Mon 18 May → Sun 24 May
+  // for cycle 01). Snapshot + prizes + builder Q&A all happen Sunday
+  // 23:59 CET.
   program: {
     name: "circles/garage",
     domain: "garage.aboutcircles.com",
     cycle: 1,
     totalCycles: 6,
     pool: "$500", // weekly prize pool, paid in CRC
-    payoutDay: "Fri",
+    payoutDay: "Sun",
     prizes: {
       first: "$250",
       second: "$150",
@@ -184,15 +185,15 @@ export const content: Content = {
     { k: "mini-apps submitted", v: "0", d: "register yours" },
     { k: "weekly prize pool", v: "$500", d: "top 3 · paid in CRC" },
     // .v overridden at render to cycleInfo.finaleLabel so it stays correct
-    { k: "grand finale", v: "FRI 26 JUN", d: "cycle 06 wrap" },
+    { k: "grand finale", v: "MON 29 JUN", d: "cycle 06 wrap" },
   ],
 
   // ── copy: landing ──────────────────────────────────────────────
   landing: {
     kicker:
-      "// circles/garage · 6-week builder program · friday-to-friday · paid in CRC",
+      "// circles/garage · 6-week builder program · monday-to-sunday · paid in CRC",
     headline: ["Get paid to ship", "mini-apps on Circles."],
-    sub: "Top 3 builders share $500 in CRC every week. 6 cycles, Friday-to-Friday. No pitch deck. Submit a working mini-app. Winners get paid the same Friday.",
+    sub: "Top 3 builders share $500 in CRC every week. 6 cycles, Monday-to-Sunday. No pitch deck. Submit a working mini-app. Winners get paid the same Sunday.",
     ctaPrimary: "sign up →",
     ctaSecondary: "submit a mini-app →",
     steps: [
@@ -205,7 +206,7 @@ export const content: Content = {
       [
         "iii.",
         "get judged. get paid.",
-        "we check submissions every friday at 23:59 CET. top 3 paid the same day in CRC.",
+        "we check submissions every sunday at 23:59 CET. top 3 paid the same day in CRC.",
       ],
     ],
     manifesto: [
@@ -213,8 +214,8 @@ export const content: Content = {
       "circles/garage pays the builders making that habit real — judged on what shipped, not on the pitch.",
       "We weigh five things: how deeply you use Circles primitives, whether a non-crypto person would open it twice, the UX, weekly referrals (invites that landed a new wallet inside the app), and weekly activity inside the Circles app.",
       "Once you've placed top-3, you file a 200-word progress note each cycle: what shipped, links, what's next. We keep paying the apps that keep moving.",
-      "6 weeks. 6 cycles. $500 every week, shared by the top 3 builders, paid in CRC on Friday. Grand finale Fri 26 Jun.",
-      "~ build in public, get paid every Friday.",
+      "6 weeks. 6 cycles. $500 every week, shared by the top 3 builders, paid in CRC on Sunday. Grand finale Mon 29 Jun.",
+      "~ build in public, get paid every Sunday.",
     ],
     bulletin: [
       {
@@ -228,12 +229,19 @@ export const content: Content = {
         href: "https://garage.aboutcircles.com/SKILL.md",
       },
       {
+        text: "circles mini-app docs",
+        hrefLabel: "docs.aboutcircles.com/miniapps",
+        href: "https://docs.aboutcircles.com/miniapps",
+      },
+      {
         text: "builder telegram",
         hrefLabel: "join the group",
         href: "https://t.me/about_circles/499",
       },
       {
-        text: "office hours · every friday",
+        text: "office hours · every sunday · rsvp on luma",
+        hrefLabel: "rsvp on luma",
+        href: "https://luma.com/5ocjvmzs",
       },
       {
         text: "stuck? reach the team",
@@ -259,11 +267,16 @@ export const content: Content = {
     },
     {
       d: "FRI 22",
-      body: "cycle 01 snapshot · builder q&a · first prizes",
+      body: "builder q&a",
       href: "", // TODO: event link
     },
     {
-      d: "FRI 26 JUN",
+      d: "SUN 24",
+      body: "cycle 01 snapshot · first prizes",
+      href: "", // TODO: event link
+    },
+    {
+      d: "MON 29 JUN",
       body: "grand finale · cycle 06 wrap",
       href: "", // TODO: event link
       pinned: true,
@@ -297,7 +310,7 @@ export const content: Content = {
     {
       num: "05",
       name: "Activity",
-      body: "Weekly unique wallets that opened the mini-app inside the Circles app (and time spent), where analytics exist. Mixpanel CSV every Friday from the Circles team.",
+      body: "Weekly unique wallets that opened the mini-app inside the Circles app (and time spent), where analytics exist. Mixpanel CSV every Sunday from the Circles team.",
     },
     {
       num: "06",
@@ -367,6 +380,7 @@ export const content: Content = {
     consent:
       "I read the rules. The weekly snapshot is final. My handle & app can show on the public leaderboard.",
     consentHref: "/rules",
+    termsHref: "/terms",
     benefits: [
       "builder page on the public leaderboard",
       "weekly CRC prizes for top 3: $250 / $150 / $100",

@@ -357,10 +357,10 @@ export function RegisterClient({
           size="md"
           sub={
             isEditing
-              ? "You're editing your submission for this cycle. Each save replaces the current entry. The latest version on Friday at 23:59 CET is what we judge."
+              ? "You're editing your submission for this cycle. Each save replaces the current entry. The latest version on Sunday at 23:59 CET is what we judge."
               : isResubmit
                 ? `Picking up from cycle ${prefill?.cycle ?? ""}. Update the entry, then save for cycle ${currentCycleLabel}.`
-                : "Each submit replaces your current entry. The latest version on Friday at 23:59 CET is what we judge."
+                : "Each submit replaces your current entry. The latest version on Sunday at 23:59 CET is what we judge."
           }
         >
           {isEditing

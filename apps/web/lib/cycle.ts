@@ -1,13 +1,13 @@
 // Cycle math.
 //
-// circles/garage is a 6-week program. Cycles run Friday→Friday, with
-// snapshots + prizes + builder Q&A at the end of each Friday.
+// circles/garage is a 6-week program. Cycles run Monday→Sunday, with
+// snapshots + prizes at the end of each Sunday. The builder Q&A is a
+// separate event during cycle 01 (Fri 22 May).
 //
-// Cycle 01 is the opener — it's a short cycle (Mon 18 May 2026 → Fri 22 May
-// 2026 23:59 CET, ~5 days) because the program launches on Monday but we
-// hand out the first prizes that same Friday. Cycles 02–06 are the regular
-// 7-day Friday→Friday rhythm. Cycle 06 ends Fri 26 Jun 2026 = the grand
-// finale.
+// Cycle 01 runs Mon 18 May 2026 → Sun 24 May 2026 23:59 CET. Cycles 02–05
+// follow the same 7-day Monday→Sunday rhythm. Cycle 06 is the closer:
+// it runs Mon 22 Jun → Mon 29 Jun (one extra day for the grand finale
+// ceremony).
 //
 // All anchors are stored as fixed UTC timestamps with the CEST offset
 // baked in. We don't currently model the CET ↔ CEST DST switch within the
@@ -16,9 +16,9 @@
 // re-pin the constants below.
 
 // All anchors below are 23:59:59 CEST = 21:59:59 UTC.
-const CYCLE_01_END_MS = Date.UTC(2026, 4, 22, 21, 59, 59); // Fri 22 May 2026
+const CYCLE_01_END_MS = Date.UTC(2026, 4, 24, 21, 59, 59); // Sun 24 May 2026
 const CYCLE_01_START_MS = Date.UTC(2026, 4, 17, 22, 0, 0); // Mon 18 May 00:00 CEST
-const FINALE_END_MS = Date.UTC(2026, 5, 26, 21, 59, 59); // Fri 26 Jun 2026
+const FINALE_END_MS = Date.UTC(2026, 5, 29, 21, 59, 59); // Mon 29 Jun 2026
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const TOTAL_CYCLES = 6;
@@ -26,7 +26,7 @@ export const TOTAL_CYCLES = 6;
 export type CycleInfo = {
   cycle: number;
   totalCycles: number;
-  /** UTC ms when the current cycle's snapshot fires (Friday 23:59 CET). */
+  /** UTC ms when the current cycle's snapshot fires (Sunday 23:59 CET). */
   endsAtMs: number;
   /** UTC ms when the current cycle started. */
   startedAtMs: number;
@@ -34,11 +34,11 @@ export type CycleInfo = {
   cycleLabel: string;
   /** e.g. "01/06" — current cycle vs total. */
   cycleOfTotal: string;
-  /** e.g. "FRI 22" — day of cycle end in Europe/Berlin. */
+  /** e.g. "SUN 24" — day of cycle end in Europe/Berlin. */
   endsAtLabel: string;
   /** UTC ms of the grand finale (cycle 06 end). */
   finaleAtMs: number;
-  /** e.g. "FRI 26 JUN". */
+  /** e.g. "MON 29 JUN". */
   finaleLabel: string;
   /** True when current cycle is cycle 06. */
   isFinalCycle: boolean;
@@ -63,25 +63,31 @@ export function getCycleInfo(now: Date = new Date()): CycleInfo {
     endsAtMs = CYCLE_01_END_MS;
     startedAtMs = CYCLE_01_START_MS;
   } else {
-    // Subsequent cycles are 7-day Fri→Fri. Cycle 02 ends one week after
-    // cycle 01.
+    // Subsequent cycles are 7-day Mon→Sun. Cycle 02 ends one week after
+    // cycle 01. Cycle 06 is special: it closes on FINALE_END_MS (Mon 29
+    // Jun) rather than the Sun 28 Jun that the Mon→Sun rhythm would imply
+    // — the extra day is the grand finale ceremony.
     const weeksSinceCycle1End = Math.floor(
       (nowMs - CYCLE_01_END_MS) / WEEK_MS,
     );
     const additionalCycles = weeksSinceCycle1End + 1; // +1 because we're already in cycle 02 the moment cycle 01 ends
     cycle = Math.min(1 + additionalCycles, TOTAL_CYCLES);
-    endsAtMs = CYCLE_01_END_MS + additionalCycles * WEEK_MS;
-    startedAtMs = endsAtMs - WEEK_MS + 1000;
+    if (cycle === TOTAL_CYCLES) {
+      endsAtMs = FINALE_END_MS;
+      startedAtMs = CYCLE_01_END_MS + (TOTAL_CYCLES - 2) * WEEK_MS + 1000;
+    } else {
+      endsAtMs = CYCLE_01_END_MS + additionalCycles * WEEK_MS;
+      startedAtMs = endsAtMs - WEEK_MS + 1000;
+    }
   }
 
   // `>=` so the snapshot second itself flips the program to "over" and the
-  // override below clamps us to cycle 06 (avoids a 1-second window where the
-  // else branch above would compute cycle 07 ending Fri 3 Jul).
+  // override below clamps us to cycle 06.
   const isOver = nowMs >= FINALE_END_MS;
   if (isOver) {
     cycle = TOTAL_CYCLES;
     endsAtMs = FINALE_END_MS;
-    startedAtMs = FINALE_END_MS - WEEK_MS + 1000;
+    startedAtMs = CYCLE_01_END_MS + (TOTAL_CYCLES - 2) * WEEK_MS + 1000;
   }
 
   const msUntilEnd = Math.max(0, endsAtMs - nowMs);

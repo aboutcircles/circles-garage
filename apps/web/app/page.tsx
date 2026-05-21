@@ -232,7 +232,7 @@ export default async function LandingPage() {
         >
           <Pane
             title={`cycle ${cycle} · pool`}
-            hint="weekly · top 3 · paid friday"
+            hint="weekly · top 3 · paid sunday"
           >
             <div className="font-mono text-4xl font-bold leading-none tracking-[-1px]">
               {p.pool}
@@ -340,9 +340,9 @@ export default async function LandingPage() {
           <Pane title="schedule" hint={`cycle ${cycle}`}>
             {content.schedule.map((s, i) => {
               // s.d is either "MON 18" (weekday + day, current month) or
-              // "FRI 26 JUN" (weekday + day + month, e.g. grand finale).
-              // Match day-of-month AND month so e.g. "FRI 22" doesn't go
-              // "now" on the 22nd of every month.
+              // "MON 29 JUN" (weekday + day + month, e.g. grand finale).
+              // Match day-of-month AND month so e.g. "SUN 24" doesn't go
+              // "now" on the 24th of every month.
               const tokens = s.d.split(/\s+/);
               const dayToken = tokens[1] ?? "";
               const monthToken = (tokens[2] ?? "").toUpperCase();

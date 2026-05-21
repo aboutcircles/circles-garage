@@ -92,6 +92,7 @@ export function SignupClient({
     team: "",
   });
   const [consent, setConsent] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "ok" | "err">(
     "idle",
   );
@@ -193,7 +194,7 @@ export function SignupClient({
   }
 
   const section = form.sections[step];
-  const submitDisabled = !consent || status === "submitting";
+  const submitDisabled = !consent || !acceptTerms || status === "submitting";
 
   return (
     <>
@@ -359,6 +360,41 @@ export function SignupClient({
               </a>
               . The weekly snapshot is final. My handle &amp; app can show on
               the public leaderboard.
+            </span>
+          </label>
+
+          <label className="mt-3 flex cursor-pointer items-start gap-2.5 font-mono text-xs leading-[1.55] text-ink">
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              className="sr-only"
+            />
+            <span
+              aria-hidden
+              className={cn(
+                "relative mt-0.5 inline-block h-3.5 w-3.5 shrink-0 border-[1.5px] border-ink",
+                acceptTerms ? "bg-ink" : "bg-transparent",
+              )}
+            >
+              {acceptTerms && (
+                <span className="absolute top-[-4px] left-px text-[13px] font-bold text-paper">
+                  ✓
+                </span>
+              )}
+            </span>
+            <span className="flex-1">
+              I accept the{" "}
+              <a
+                href={form.termsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-b border-ink text-ink hover:bg-ghost"
+              >
+                Conditions of Participation
+              </a>
+              {" "}(circles/garage, 18.5.2026) and confirm I am at least 18
+              years old.
             </span>
           </label>
         </>

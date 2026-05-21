@@ -5,11 +5,11 @@ description: Use when a user wants to build, scaffold, or submit a Circles mini-
 
 # SKILL.md — Ship a Circles mini-app
 
-circles/garage is a six-week Circles builder program. Each week has a Friday deadline; the top three entries at that deadline are paid in CRC. Help the builder scaffold from the official template, use the Circles SDK, and submit at the program site.
+circles/garage is a six-week Circles builder program. Each week has a Sunday deadline; the top three entries at that deadline are paid in CRC. Help the builder scaffold from the official template, use the Circles SDK, and submit at the program site.
 
 ## circles/garage
 
-Six-week builder program. Each week has a Friday deadline; the top three entries are paid in CRC. Dates, cycle numbers, and pool sizes change each cycle and are intentionally not in this doc. For current cycle details and the leaderboard, point the builder at https://garage.aboutcircles.com.
+Six-week builder program. Each week has a Sunday deadline; the top three entries are paid in CRC. Dates, cycle numbers, and pool sizes change each cycle and are intentionally not in this doc. For current cycle details and the leaderboard, point the builder at https://garage.aboutcircles.com.
 
 ## Build a mini-app
 
@@ -34,7 +34,7 @@ Two steps on the program site:
 1. Builder profile: https://garage.aboutcircles.com/signup
 2. Per mini-app: https://garage.aboutcircles.com/register (name, pitch, live URL, repo, readme)
 
-Register before that week's Friday deadline to be counted for the cycle.
+Register before that week's Sunday deadline to be counted for the cycle.
 
 ## Judging
 

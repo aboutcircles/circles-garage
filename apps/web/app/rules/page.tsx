@@ -49,7 +49,7 @@ export default function RulesPage() {
   ];
 
   const cadenceBullets = [
-    "every cycle ends Friday 23:59 CET — snapshot, builder Q&A, prizes paid in CRC same day.",
+    "every cycle ends Sunday 23:59 CET — snapshot and prizes paid in CRC same day.",
     "you can save your submission as often as you want · only the latest version at snapshot time counts.",
     "one submission per cycle per builder · resubmit to overwrite.",
   ];
@@ -81,16 +81,17 @@ export default function RulesPage() {
         <Pane title="the rules" hint="how circles/garage works">
           <Hero
             size="md"
-            sub={`6-week builder program · Friday-to-Friday cycles · ${prizes.total} every week in ${prizes.currency}, shared by the top 3. No pitch deck. Submit a working mini-app. Winners get paid the same Friday.`}
+            sub={`6-week builder program · Monday-to-Sunday cycles · ${prizes.total} every week in ${prizes.currency}, shared by the top 3. No pitch deck. Submit a working mini-app. Winners get paid the same Sunday.`}
           >
             the rules.
           </Hero>
 
-          <Section num="01" label="cadence" hint="6 cycles · friday-to-friday">
+          <Section num="01" label="cadence" hint="6 cycles · monday-to-sunday">
             <p className="font-mono text-[13px] leading-[1.65] text-ink">
-              cycle 01 is a 5-day opener: Mon 18 May → Fri 22 May. cycles
-              02–06 run the full Fri → Fri week. grand finale{" "}
-              {cycleInfo.finaleLabel}.
+              cycle 01 runs Mon 18 May → Sun 24 May. cycles 02–05 follow the
+              same Mon → Sun week. cycle 06 is the closer (Mon 22 Jun → Mon
+              29 Jun) and ends with the grand finale {cycleInfo.finaleLabel}.
+              builder q&amp;a fri 22 may.
             </p>
             <div className="mt-3 font-mono text-[13px] leading-[1.9]">
               {cadenceBullets.map((b, i) => (
@@ -139,7 +140,7 @@ export default function RulesPage() {
             </div>
             <p className="mt-3 font-mono text-[13px] leading-[1.6] text-faint">
               ↳ payments hit your{" "}
-              <span className="text-ink">circles_addr</span> on Friday after
+              <span className="text-ink">circles_addr</span> on Sunday after
               the snapshot.
             </p>
           </Section>
@@ -197,7 +198,7 @@ export default function RulesPage() {
           >
             <p className="font-mono text-[13px] leading-[1.65] text-ink">
               the weekly snapshot is final. we publish the leaderboard after
-              every Friday snapshot. anything submitted after 23:59 CET rolls
+              every Sunday snapshot. anything submitted after 23:59 CET rolls
               into the next cycle.
             </p>
             <p className="mt-2.5 font-mono text-[13px] leading-[1.65] text-faint">

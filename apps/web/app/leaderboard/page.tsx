@@ -260,7 +260,7 @@ export default async function LeaderboardPage() {
               </div>
             </div>
             <div className="mt-2.5 font-mono text-[11px] text-faint">
-              ↳ paid every friday after snapshot.
+              ↳ paid every sunday after snapshot.
             </div>
           </Pane>
 

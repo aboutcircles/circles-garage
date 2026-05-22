@@ -193,7 +193,7 @@ export const content: Content = {
     kicker:
       "// circles/garage · 6-week builder program · monday-to-sunday · paid in CRC",
     headline: ["Get paid to ship", "mini-apps on Circles."],
-    sub: "Top 3 builders share $500 in CRC every week. 6 cycles, Monday-to-Sunday. No pitch deck. Submit a working mini-app. Winners get paid the same Sunday.",
+    sub: "Top 3 builders share $500 in CRC every week. 6 cycles, Monday-to-Sunday. No pitch deck. Submit a working mini-app.",
     ctaPrimary: "sign up →",
     ctaSecondary: "submit a mini-app →",
     steps: [

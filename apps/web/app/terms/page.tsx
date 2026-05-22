@@ -141,8 +141,8 @@ export default function TermsPage() {
             </Clause>
             <Clause n="4.2">
               The Program consists of weekly submission cycles. Unless
-              otherwise announced, each weekly cycle closes on Sunday at 23:59
-              CET/CEST.
+              otherwise announced, each weekly cycle closes on Sunday at
+              23:59 CET/CEST.
             </Clause>
             <Clause n="4.3">
               A participant may submit one project per weekly cycle. Updated
@@ -287,9 +287,10 @@ export default function TermsPage() {
               equivalent; and third prize, USD 100 equivalent.
             </Clause>
             <Clause n="8.3">
-              Prizes are intended to be paid in CRC and credited to the
-              Participant&rsquo;s Gnosis App account, unless the Organiser
-              expressly states otherwise.
+              Prizes are intended to be paid in Circles (CRC) via a
+              Circles-compatible group currency to the participant&rsquo;s
+              Circles account, unless the Organiser expressly states
+              otherwise.
             </Clause>
             <Clause n="8.4">
               Where a prize is described by reference to a USD value, the
@@ -328,45 +329,76 @@ export default function TermsPage() {
             </Clause>
           </Section>
 
-          <Section num="09" label="intellectual property">
+          <Section num="09" label="leaderboard">
             <Clause n="9.1">
+              The Program may include a public leaderboard displaying certain
+              participants and metrics relating to their submissions and
+              activity in the Circles ecosystem.
+            </Clause>
+            <Clause n="9.2">
+              Where a leaderboard is used it may display the name or title of
+              the participant&rsquo;s submission; and a link or other
+              reference that allows users to open or access the submission.
+            </Clause>
+            <Clause n="9.3">
+              Participation in the Program includes participation in any
+              public leaderboard used by the Organiser. Participants
+              acknowledge that their submission name and the associated link
+              or reference may be displayed publicly for the duration of the
+              Program and for a reasonable period thereafter.
+            </Clause>
+          </Section>
+
+          <Section num="10" label="intellectual property">
+            <Clause n="10.1">
               Participants retain ownership of the intellectual property
               rights in their submissions, except for any third-party
               materials and except as otherwise agreed separately.
             </Clause>
-            <Clause n="9.2">
+            <Clause n="10.2">
               By submitting a project, each participant grants the Organiser
               and its affiliated ecosystem partners a worldwide, non-exclusive,
               royalty-free licence for the duration of the applicable
               intellectual property rights to:
               <Bullets
                 items={[
-                  "review, test, evaluate, and demonstrate the submission in connection with the Program;",
-                  "use the project name, screenshots, logos, short descriptions, and publicly submitted materials to publicise the Program, the participant's involvement, and the results of the Program; and",
-                  "display or refer to the submission on garage.aboutcircles.com, marketplaces, event materials, and social media channels.",
+                  "review, test, evaluate, copy, reproduce, host, store, cache, and demonstrate the submission in connection with the Program;",
+                  "use the project name, screenshots, logos, short descriptions, and publicly submitted materials to publicise the Program, the participant's involvement, and the results of the Program;",
+                  "use, display, perform, transmit, make available, and distribute display or refer to the submission on garage.aboutcircles.com, marketplaces, event materials, and social media channels; and",
+                  "make such technical modifications, formatting changes, and adaptations to the submission and related materials as are reasonably necessary to host, display, test, review, demonstrate, list, index, feature, or otherwise make the submission available in connection with the Program, the Circles ecosystem, and the products, services, websites, applications, and communications of the Organiser and its affiliated ecosystem partners.",
                 ]}
               />
             </Clause>
-            <Clause n="9.3">
-              Section 9 does not transfer ownership of the submission to the
+            <Clause n="10.3">
+              Section 10 does not transfer ownership of the submission to the
               Organiser and does not oblige the Organiser to list, integrate,
-              fund, or continue supporting any submission.
+              fund, or continue supporting any submission. For the avoidance
+              of doubt, nothing in these Conditions restricts or limits the
+              Organiser or its affiliated ecosystem partners from
+              independently developing, acquiring, licensing, or marketing
+              products or services that are similar to, derived from,
+              inspired by, or that compete with any submission. The Organiser
+              and its affiliated ecosystem partners shall have no obligation
+              to refrain from any such activities or to compensate any
+              participant for doing so, provided only that they do not
+              infringe any intellectual property rights in a submission in
+              breach of applicable law or any separate written agreement.
             </Clause>
           </Section>
 
-          <Section num="10" label="confidentiality and publicity">
-            <Clause n="10.1">
+          <Section num="11" label="confidentiality and publicity">
+            <Clause n="11.1">
               Unless the Organiser expressly states that certain materials
               must remain confidential, submissions should be treated as
               non-confidential.
             </Clause>
-            <Clause n="10.2">
+            <Clause n="11.2">
               Participants must not disclose any non-public credentials,
               private keys, privileged access, unpublished security issues,
               or other confidential information provided by the Organiser or
               encountered in the course of the Program.
             </Clause>
-            <Clause n="10.3">
+            <Clause n="11.3">
               The Organiser may publicly identify participants, shortlisted
               submissions, winners, and prize recipients, and may publish
               related project descriptions and promotional content. To the
@@ -383,18 +415,18 @@ export default function TermsPage() {
             </Clause>
           </Section>
 
-          <Section num="11" label="no advice">
-            <Clause n="11.1">
+          <Section num="12" label="no advice">
+            <Clause n="12.1">
               The Program, the website garage.aboutcircles.com, and any
               related communications are provided for informational and
               program-administration purposes only.
             </Clause>
-            <Clause n="11.2">
+            <Clause n="12.2">
               Neither the Organiser nor any affiliated person provides
               investment, financial, legal, tax, or regulatory advice through
               the Program.
             </Clause>
-            <Clause n="11.3">
+            <Clause n="12.3">
               Participants are solely responsible for assessing the legal,
               technical, tax, and commercial implications of building,
               operating, or using any submission.
@@ -402,10 +434,10 @@ export default function TermsPage() {
           </Section>
 
           <Section
-            num="12"
+            num="13"
             label="participant warranties and organiser disclaimers"
           >
-            <Clause n="12.1">
+            <Clause n="13.1">
               Each participant represents and warrants that:
               <Bullets
                 items={[
@@ -417,7 +449,7 @@ export default function TermsPage() {
                 ]}
               />
             </Clause>
-            <Clause n="12.2">
+            <Clause n="13.2">
               The Program, the website garage.aboutcircles.com, the Circles
               documentation, and any related tools, APIs, SDKs, or materials
               are provided &ldquo;as is&rdquo; and &ldquo;as available,&rdquo;
@@ -425,7 +457,7 @@ export default function TermsPage() {
               express, implied, or statutory, to the maximum extent permitted
               by law.
             </Clause>
-            <Clause n="12.3">
+            <Clause n="13.3">
               The Organiser does not warrant that:
               <Bullets
                 items={[
@@ -436,14 +468,14 @@ export default function TermsPage() {
                 ]}
               />
             </Clause>
-            <Clause n="12.4">
+            <Clause n="13.4">
               Participants acknowledge that blockchain-based systems, smart
               contracts, cryptographic wallets, and token-based assets involve
               technological, cybersecurity, legal, and market risks.
             </Clause>
           </Section>
 
-          <Section num="13" label="indemnity">
+          <Section num="14" label="indemnity">
             <P>
               Each participant shall indemnify and hold harmless the Organiser
               and its affiliates, officers, employees, agents, contractors,
@@ -458,8 +490,8 @@ export default function TermsPage() {
             </P>
           </Section>
 
-          <Section num="14" label="liability">
-            <Clause n="14.1">
+          <Section num="15" label="liability">
+            <Clause n="15.1">
               To the maximum extent permitted by law, the Organiser and its
               affiliates, officers, employees, agents, contractors, and
               partners shall not be liable for any indirect, incidental,
@@ -468,21 +500,21 @@ export default function TermsPage() {
               digital assets, or business interruption, arising out of or in
               connection with the Program.
             </Clause>
-            <Clause n="14.2">
+            <Clause n="15.2">
               Nothing in these Conditions excludes or limits liability for
               fraud, wilful misconduct, death or personal injury caused by
               negligence, or any other liability that cannot be excluded under
               applicable law.
             </Clause>
-            <Clause n="14.3">
+            <Clause n="15.3">
               The participant remains solely responsible for the submission,
               its operation, and any interaction with end users or third-party
               services.
             </Clause>
           </Section>
 
-          <Section num="15" label="suspension, exclusion, changes">
-            <Clause n="15.1">
+          <Section num="16" label="suspension, exclusion, changes">
+            <Clause n="16.1">
               The Organiser may reject, suspend, disqualify, or remove a
               participant or submission at any time if the Organiser
               reasonably believes that:
@@ -495,28 +527,28 @@ export default function TermsPage() {
                 ]}
               />
             </Clause>
-            <Clause n="15.2">
+            <Clause n="16.2">
               The Organiser may amend these Conditions, the judging process,
               the schedule, the prize structure, or any aspect of the Program
               where reasonably necessary for legal, technical, operational, or
               security reasons. Material changes will be published or
               otherwise communicated appropriately.
             </Clause>
-            <Clause n="15.3">
+            <Clause n="16.3">
               The Organiser may suspend or terminate the Program at any time
               where necessary for legal, technical, operational, or security
               reasons.
             </Clause>
           </Section>
 
-          <Section num="16" label="data protection">
-            <Clause n="16.1">
+          <Section num="17" label="data protection">
+            <Clause n="17.1">
               Information about how personal data is collected and processed
               in connection with the Program is set out in the applicable
               privacy notice available at [insert privacy notice of GEL
               Cayman].
             </Clause>
-            <Clause n="16.2">
+            <Clause n="17.2">
               By participating, the participant acknowledges that the
               Organiser may process registration, submission, contact,
               wallet, and related program-administration data in accordance
@@ -524,7 +556,7 @@ export default function TermsPage() {
             </Clause>
           </Section>
 
-          <Section num="17" label="governing law and jurisdiction">
+          <Section num="18" label="governing law and jurisdiction">
             <P>
               These Conditions of Participation and any dispute or claim
               (including non-contractual disputes or claims) arising out of
@@ -539,8 +571,8 @@ export default function TermsPage() {
             </P>
           </Section>
 
-          <Section num="18" label="miscellaneous">
-            <Clause n="18.1">
+          <Section num="19" label="miscellaneous">
+            <Clause n="19.1">
               Participation in the Program does not create any employment,
               agency, partnership, joint venture, fiduciary, or franchise
               relationship between the participant and the Organiser or any
@@ -548,23 +580,23 @@ export default function TermsPage() {
               Organiser or to make any representations on its behalf unless
               expressly authorised in writing.
             </Clause>
-            <Clause n="18.2">
+            <Clause n="19.2">
               If any provision of these Conditions is held to be invalid,
               illegal, or unenforceable, the remaining provisions shall
               remain in full force and effect.
             </Clause>
-            <Clause n="18.3">
+            <Clause n="19.3">
               No failure or delay by the Organiser in exercising any right
               under these Conditions shall operate as a waiver of that right.
             </Clause>
-            <Clause n="18.4">
+            <Clause n="19.4">
               These Conditions, together with any documents expressly
               incorporated by reference, constitute the entire agreement
               between the Organiser and the participant regarding the Program
               and supersede prior discussions relating to the same subject
               matter.
             </Clause>
-            <Clause n="18.5">
+            <Clause n="19.5">
               The Organiser may assign or transfer these Conditions or any of
               its rights or obligations under them to an affiliate or in
               connection with a reorganisation, merger, or transfer of the
@@ -572,7 +604,7 @@ export default function TermsPage() {
               or obligations without the Organiser&rsquo;s prior written
               consent.
             </Clause>
-            <Clause n="18.6">
+            <Clause n="19.6">
               Sections that by their nature are intended to survive
               termination or expiry of the Program shall survive, including
               intellectual property, publicity, disclaimers, liability,

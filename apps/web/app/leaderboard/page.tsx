@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
                 ? programOpen
                   ? `cycle ${cycle} · live`
                   : `cycle ${cycle} opens ${startsAtLabel}`
-                : `rank by ↓ judges' score · ${rows.length} builders`
+                : `rank by ↓ judges' score · ${rows.length} projects`
             }
           >
           {empty ? (
@@ -127,62 +127,39 @@ export default async function LeaderboardPage() {
                   this week
                 </span>
                 <span>all time</span>
-                <span>by track</span>
-                <span className="ml-auto">
-                  rank ↓ <span className="text-ink">judges&apos; score</span>
-                </span>
-                <span>search ⌕</span>
-                <span>export csv ↓</span>
               </div>
 
               <div className="overflow-x-auto">
                 <Table
-                  head={[
-                    "#",
-                    "builder",
-                    "org",
-                    "app",
-                    "pitch",
-                    "mints",
-                    "vol",
-                    "payout",
-                    "streak",
-                  ]}
-                  sizes={[
-                    { w: 30 },
-                    {},
-                    {},
-                    {},
-                    {},
-                    { right: true },
-                    { right: true },
-                    { right: true },
-                    { right: true, w: 50 },
-                  ]}
+                  head={["#", "project", "score"]}
+                  sizes={[{ w: 30 }, {}, { right: true, w: 80 }]}
                   rows={rows.map((r) => ({
-                    _muted: r.muted,
                     cells: [
                       {
-                        v:
-                          String(r.rank).padStart(2, "0") +
-                          (r.star ? " ★" : ""),
+                        v: String(r.rank).padStart(2, "0"),
                         muted: true,
                       },
-                      { v: r.builder, bold: true },
-                      { v: r.org, muted: true, size: 11 },
-                      { v: r.app, bold: true },
-                      { v: r.pitch, muted: true, size: 11 },
-                      { v: r.mints },
-                      { v: r.vol, muted: true },
-                      { v: r.payout, bold: true },
-                      { v: r.streak, muted: true, size: 11 },
+                      {
+                        v: (
+                          <a
+                            href={r.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="border-b border-ink text-ink hover:bg-ghost"
+                          >
+                            {r.project}
+                          </a>
+                        ),
+                        bold: true,
+                      },
+                      { v: r.score, bold: true },
                     ],
                   }))}
                 />
               </div>
 
               <div className="mt-3.5 flex justify-between font-mono text-[11px] text-faint">
-                <span>↳ {rows.length} builders</span>
+                <span>↳ {rows.length} projects</span>
               </div>
             </>
           )}
@@ -219,13 +196,16 @@ export default async function LeaderboardPage() {
                       {String(r.rank).padStart(2, "0")}
                     </span>
                     <span>
-                      <b>{r.builder}</b>
-                      <br />
-                      <span className="text-[11px] text-faint">
-                        ↳ {r.app}
-                      </span>
+                      <a
+                        href={r.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="border-b border-ink font-bold text-ink hover:bg-ghost"
+                      >
+                        {r.project}
+                      </a>
                     </span>
-                    <span className="font-bold">{r.payout}</span>
+                    <span className="font-bold">{r.score}</span>
                   </div>
                 ))}
               </div>

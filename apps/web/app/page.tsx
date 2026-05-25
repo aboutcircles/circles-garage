@@ -274,29 +274,27 @@ export default async function LandingPage() {
               <>
                 <div className="overflow-x-auto">
                   <Table
-                    head={["#", "builder · app", "mints", "payout"]}
-                    sizes={[{ w: 28 }, {}, { right: true }, { right: true }]}
+                    head={["#", "project", "score"]}
+                    sizes={[{ w: 28 }, {}, { right: true, w: 64 }]}
                     rows={content.leaderboard.slice(0, 5).map((r) => ({
-                      _muted: r.muted,
                       cells: [
                         {
-                          v:
-                            String(r.rank).padStart(2, "0") +
-                            (r.star ? " ★" : ""),
+                          v: String(r.rank).padStart(2, "0"),
                           muted: true,
                         },
                         {
                           v: (
-                            <>
-                              <b>{r.builder}</b>
-                              <span className="ml-1.5 text-faint">
-                                ↳ {r.app}
-                              </span>
-                            </>
+                            <a
+                              href={r.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="border-b border-ink font-bold text-ink hover:bg-ghost"
+                            >
+                              {r.project}
+                            </a>
                           ),
                         },
-                        { v: r.mints },
-                        { v: r.payout, bold: true },
+                        { v: r.score, bold: true },
                       ],
                     }))}
                   />

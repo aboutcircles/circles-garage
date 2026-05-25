@@ -71,16 +71,9 @@ export type JudgingCriterion = {
 // ── leaderboard rows ───────────────────────────────────────────────
 export type LeaderboardRow = {
   rank: number;
-  builder: string;
-  org: string;
-  app: string;
-  pitch: string;
-  mints: string;
-  vol: string;
-  payout: string;
-  streak: string;
-  star?: boolean;
-  muted?: boolean;
+  project: string;
+  url: string;
+  score: number;
 };
 
 // ── leaderboard secondary panels ───────────────────────────────────
@@ -320,8 +313,28 @@ export const content: Content = {
   ],
 
   // ── leaderboard rows ───────────────────────────────────────────
-  // cycle 01 has just opened — no entries yet.
-  leaderboard: [],
+  leaderboard: [
+    { rank: 1, project: "CRC Boosts", url: "https://crc-boost-market.vercel.app", score: 100 },
+    { rank: 2, project: "THP for Good", url: "https://thp.gnosis.box", score: 90 },
+    { rank: 3, project: "Circles Markets", url: "https://circles-markets.netlify.app/", score: 80 },
+    { rank: 4, project: "Circles Chat", url: "https://app.circles-chat.org", score: 60 },
+    { rank: 5, project: "Mutual Aid Map", url: "https://mutual-aid-map.vercel.app", score: 60 },
+    { rank: 6, project: "Card Circles", url: "https://cards-maxnormal.vercel.app/", score: 60 },
+    { rank: 7, project: "SplitCircles", url: "https://splitcircles.vercel.app/", score: 50 },
+    { rank: 8, project: "All Together", url: "https://all-together-gamma.vercel.app", score: 50 },
+    { rank: 9, project: "Hunch", url: "https://hunch-teleshops-projects.vercel.app", score: 50 },
+    { rank: 10, project: "Yield", url: "https://yield-gnosis-mini-app.vercel.app/", score: 50 },
+    { rank: 11, project: "Nft Viewer", url: "https://nft-viewer-ten.vercel.app/", score: 50 },
+    { rank: 12, project: "ChessBuddy", url: "https://chessbuddy-ivory.vercel.app", score: 50 },
+    { rank: 13, project: "money-library", url: "https://github.com/Means-Of-Production/money-library", score: 20 },
+    { rank: 14, project: "Balaio", url: "https://www.usebalaio.com/", score: 20 },
+    { rank: 15, project: "DreamCircle Agents", url: "https://dreamnet.ink/dreamcircle-agents", score: 20 },
+    { rank: 16, project: "HistoryGuessr", url: "https://history-guessr.vercel.app/", score: 20 },
+    { rank: 17, project: "organic", url: "https://organic-network.vercel.app/", score: 20 },
+    { rank: 18, project: "Vendyz", url: "https://vendyz.vercel.app/", score: 20 },
+    { rank: 19, project: "chai", url: "https://app.chai.sh/", score: 20 },
+    { rank: 20, project: "Neynart", url: "https://farcaster.xyz/miniapps/A2SFoJHW7Y9B/neynart", score: 20 },
+  ],
 
   // ── leaderboard secondary panels ───────────────────────────────
   movers: [],

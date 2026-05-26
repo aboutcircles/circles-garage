@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
 import { getCycleInfo } from "@/lib/cycle";
 import { createClient } from "@/lib/supabase/server";
+import { AgentPaste } from "@/components/agent-paste";
 import { IntroVideoModal } from "@/components/intro-video-modal";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInWithGitHub } from "@/components/sign-in-with-github";
@@ -174,8 +175,16 @@ export default async function LandingPage() {
         {/* left col */}
         <div
           className="grid min-h-0 gap-3"
-          style={{ gridTemplateRows: "auto auto 1fr" }}
+          style={{ gridTemplateRows: "auto auto auto 1fr" }}
         >
+          <Pane
+            title="build with an agent"
+            hint="new to vibecoding · 0 setup"
+            flush
+          >
+            <AgentPaste prompt={L.agent.prompt} blurb={L.agent.blurb} />
+          </Pane>
+
           <Pane title="how it works" hint="3 steps · no rounds">
             {L.steps.map(([n, t, b], i) => {
               const href =

@@ -41,12 +41,18 @@ export type BulletinItem = {
   hrefLabel?: string; // optional separate label for the link portion
 };
 
+export type LandingAgent = {
+  prompt: string;
+  blurb: string;
+};
+
 export type LandingCopy = {
   kicker: string;
   headline: readonly [string, string];
   sub: string;
   ctaPrimary: string;
   ctaSecondary: string;
+  agent: LandingAgent;
   steps: readonly LandingStep[];
   manifesto: readonly string[];
   bulletin: readonly BulletinItem[];
@@ -196,6 +202,12 @@ export const content: Content = {
     sub: "Top 3 builders share $500 in CRC every week. 6 cycles, Monday-to-Sunday. No pitch deck. Submit a working mini-app.",
     ctaPrimary: "sign up →",
     ctaSecondary: "submit a mini-app →",
+    agent: {
+      prompt:
+        "Read https://garage.aboutcircles.com/SKILL.md and help me submit to circles/garage",
+      blurb:
+        "paste into your terminal. your agent reads our skill file, scaffolds you a starter, and walks you through submitting by sunday.",
+    },
     steps: [
       ["i.", "sign up", "github · contact · circles profile."],
       [

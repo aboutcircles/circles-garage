@@ -181,6 +181,10 @@ export default async function LandingPage() {
             <AgentPaste prompt={L.agent.prompt} />
           </Pane>
 
+          <Pane title="intro · welcome.mp4" hint="1 min" flush>
+            <IntroVideoModal thumbnailUrl={introThumbnail} />
+          </Pane>
+
           <Pane title="how it works" hint="3 steps · no rounds">
             {L.steps.map(([n, t, b], i) => {
               const href =
@@ -207,10 +211,6 @@ export default async function LandingPage() {
                 </a>
               );
             })}
-          </Pane>
-
-          <Pane title="intro · welcome.mp4" hint="1 min" flush>
-            <IntroVideoModal thumbnailUrl={introThumbnail} />
           </Pane>
 
           <Pane title="manifesto.md" hint="why this exists">

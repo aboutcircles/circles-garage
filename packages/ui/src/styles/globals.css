@@ -138,4 +138,12 @@
     grid-template-columns: 1fr !important;
     grid-template-rows: auto !important;
   }
+  /* Without this, children using `grid-column: span N` (e.g. the
+     landing hero Pane with `span={2}`) force the collapsed grid to grow
+     an implicit second column, which crushes the natural-flow column
+     to ~2px wide and reorders the rest of the page. */
+  .grid-collapse-md > * {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
 }

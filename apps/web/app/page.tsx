@@ -177,12 +177,8 @@ export default async function LandingPage() {
           className="grid min-h-0 gap-3"
           style={{ gridTemplateRows: "auto auto auto 1fr" }}
         >
-          <Pane
-            title="build with an agent"
-            hint="new to vibecoding · 0 setup"
-            flush
-          >
-            <AgentPaste prompt={L.agent.prompt} blurb={L.agent.blurb} />
+          <Pane title="build with an agent" flush>
+            <AgentPaste prompt={L.agent.prompt} />
           </Pane>
 
           <Pane title="how it works" hint="3 steps · no rounds">

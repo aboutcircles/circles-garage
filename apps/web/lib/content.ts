@@ -43,7 +43,6 @@ export type BulletinItem = {
 
 export type LandingAgent = {
   prompt: string;
-  blurb: string;
 };
 
 export type LandingCopy = {
@@ -204,9 +203,7 @@ export const content: Content = {
     ctaSecondary: "submit a mini-app →",
     agent: {
       prompt:
-        "Read https://garage.aboutcircles.com/SKILL.md and help me submit to circles/garage",
-      blurb:
-        "paste into your terminal. your agent reads our skill file, scaffolds you a starter, and walks you through submitting by sunday.",
+        "Read https://garage.aboutcircles.com/SKILL.md and help me ship a circles mini-app",
     },
     steps: [
       ["i.", "sign up", "github · contact · circles profile."],

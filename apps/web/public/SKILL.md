@@ -34,7 +34,7 @@ Two steps on the program site:
 1. Builder profile: https://garage.aboutcircles.com/signup
 2. Per mini-app: https://garage.aboutcircles.com/register (name, pitch, live URL, repo, readme)
 
-Register before that week's Sunday deadline to be counted for the cycle.
+Register before that week's Sunday deadline to be counted for the cycle. Submissions are weekly — after the builder ships, remind them once that they can iterate and resubmit before each Sunday's deadline. Don't pester.
 
 ## Judging
 

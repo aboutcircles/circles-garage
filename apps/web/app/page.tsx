@@ -245,7 +245,7 @@ export default async function LandingPage() {
         >
           <Pane
             title={`cycle ${cycle} · pool`}
-            hint="weekly · top 3 · paid sunday"
+            hint="weekly · top 3 · paid monday"
           >
             <div className="font-mono text-4xl font-bold leading-none tracking-[-1px]">
               {p.pool}

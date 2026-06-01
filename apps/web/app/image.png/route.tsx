@@ -89,7 +89,7 @@ export async function GET() {
               letterSpacing: 0.4,
             }}
           >
-            // circles/garage · 6-week builder program · paid sunday in CRC
+            // circles/garage · 6-week builder program · paid monday in CRC
           </div>
           <div
             style={{
@@ -143,7 +143,7 @@ export async function GET() {
             }}
           >
             Top 3 builders share $500 in CRC every week. 6 cycles,
-            monday-to-sunday. Ship a mini-app · get paid the same sunday.
+            monday-to-sunday. Ship a mini-app · get paid every monday.
           </div>
         </div>
 

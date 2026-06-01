@@ -170,15 +170,16 @@ export type Content = {
 export const content: Content = {
   // ── program meta ────────────────────────────────────────────────
   // 6-week program. Cycles run Monday→Sunday (Mon 18 May → Sun 24 May
-  // for cycle 01). Snapshot + prizes + builder Q&A all happen Sunday
-  // 23:59 CET.
+  // for cycle 01). The snapshot/submission deadline is Sunday 23:59 CET;
+  // winners are judged and prizes paid the next day (Monday). Builder
+  // Q&A is Fri 22 May.
   program: {
     name: "circles/garage",
     domain: "garage.aboutcircles.com",
     cycle: 1,
     totalCycles: 6,
     pool: "$500", // weekly prize pool, paid in CRC
-    payoutDay: "Sun",
+    payoutDay: "Mon",
     prizes: {
       first: "$250",
       second: "$150",
@@ -219,7 +220,7 @@ export const content: Content = {
       [
         "iii.",
         "get judged. get paid.",
-        "we check submissions every sunday at 23:59 CET. top 3 paid the same day in CRC.",
+        "we check submissions every sunday at 23:59 CET. top 3 announced and paid in CRC the next day.",
       ],
     ],
     manifesto: [
@@ -227,8 +228,8 @@ export const content: Content = {
       "circles/garage pays the builders making that habit real — judged on what shipped, not on the pitch.",
       "We weigh five things: how deeply you use Circles primitives, whether a non-crypto person would open it twice, the UX, weekly referrals (invites that landed a new wallet inside the app), and weekly activity inside the Circles app.",
       "Once you've placed top-3, you file a 200-word progress note each cycle: what shipped, links, what's next. We keep paying the apps that keep moving.",
-      "6 weeks. 6 cycles. $500 every week, shared by the top 3 builders, paid in CRC on Sunday. Grand finale Mon 29 Jun.",
-      "~ build in public, get paid every Sunday.",
+      "6 weeks. 6 cycles. $500 every week, shared by the top 3 builders, paid in CRC every Monday. Grand finale Mon 29 Jun.",
+      "~ build in public, get paid every Monday.",
     ],
     bulletin: [
       {
@@ -285,7 +286,7 @@ export const content: Content = {
     },
     {
       d: "SUN 7",
-      body: "cycle 03 snapshot · prizes",
+      body: "cycle 03 snapshot · prizes mon",
       href: "", // TODO: event link
     },
     {

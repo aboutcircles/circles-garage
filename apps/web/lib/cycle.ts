@@ -1,8 +1,9 @@
 // Cycle math.
 //
-// circles/garage is a 6-week program. Cycles run Monday→Sunday, with
-// snapshots + prizes at the end of each Sunday. The builder Q&A is a
-// separate event during cycle 01 (Fri 22 May).
+// circles/garage is a 6-week program. Cycles run Monday→Sunday; the
+// snapshot/submission deadline fires at the end of each Sunday and
+// winners are judged + prizes paid the next day (Monday). The builder
+// Q&A is a separate event during cycle 01 (Fri 22 May).
 //
 // Cycle 01 runs Mon 18 May 2026 → Sun 24 May 2026 23:59 CET. Cycles 02–05
 // follow the same 7-day Monday→Sunday rhythm. Cycle 06 is the closer:

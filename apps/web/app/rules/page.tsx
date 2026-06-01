@@ -49,7 +49,7 @@ export default function RulesPage() {
   ];
 
   const cadenceBullets = [
-    "every cycle ends Sunday 23:59 CET — snapshot and prizes paid in CRC same day.",
+    "every cycle ends Sunday 23:59 CET — that's the snapshot. winners announced and prizes paid in CRC the next day (Monday).",
     "you can save your submission as often as you want · only the latest version at snapshot time counts.",
     "one submission per cycle per builder · resubmit to overwrite.",
   ];
@@ -81,7 +81,7 @@ export default function RulesPage() {
         <Pane title="the rules" hint="how circles/garage works">
           <Hero
             size="md"
-            sub={`6-week builder program · Monday-to-Sunday cycles · ${prizes.total} every week in ${prizes.currency}, shared by the top 3. No pitch deck. Submit a working mini-app. Winners get paid the same Sunday.`}
+            sub={`6-week builder program · Monday-to-Sunday cycles · ${prizes.total} every week in ${prizes.currency}, shared by the top 3. No pitch deck. Submit a working mini-app. Winners are announced and paid the next day, Monday.`}
           >
             the rules.
           </Hero>
@@ -140,8 +140,8 @@ export default function RulesPage() {
             </div>
             <p className="mt-3 font-mono text-[13px] leading-[1.6] text-faint">
               ↳ payments hit your{" "}
-              <span className="text-ink">circles_addr</span> on Sunday after
-              the snapshot.
+              <span className="text-ink">circles_addr</span> on Monday, after
+              the Sunday snapshot is judged.
             </p>
           </Section>
 
@@ -197,8 +197,8 @@ export default function RulesPage() {
             hint="the rules of the game"
           >
             <p className="font-mono text-[13px] leading-[1.65] text-ink">
-              the weekly snapshot is final. we publish the leaderboard after
-              every Sunday snapshot. anything submitted after 23:59 CET rolls
+              the weekly snapshot is final. we publish the judged leaderboard
+              the next day (Monday). anything submitted after 23:59 CET rolls
               into the next cycle.
             </p>
             <p className="mt-2.5 font-mono text-[13px] leading-[1.65] text-faint">

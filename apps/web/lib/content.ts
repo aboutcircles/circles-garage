@@ -81,6 +81,17 @@ export type LeaderboardRow = {
   score: number;
 };
 
+// ── per-cycle leaderboard results ──────────────────────────────────
+// One snapshot per cycle. `rows` are pre-ranked by descending score
+// (ties keep their listed order). The "all time" leaderboard is derived
+// by summing each project's score across every cycle — see
+// `lib/leaderboard.ts`. Projects are matched across cycles by their URL,
+// so a project that places in multiple cycles accumulates its scores.
+export type CycleResult = {
+  cycle: number;
+  rows: readonly LeaderboardRow[];
+};
+
 // ── leaderboard secondary panels ───────────────────────────────────
 export type MoverDirection = "up" | "down";
 
@@ -150,7 +161,7 @@ export type Content = {
   landing: LandingCopy;
   schedule: readonly ScheduleEntry[];
   judging: readonly JudgingCriterion[];
-  leaderboard: readonly LeaderboardRow[];
+  cycles: readonly CycleResult[];
   movers: readonly Mover[];
   signup: SignupForm;
   draft: Draft;
@@ -258,23 +269,23 @@ export const content: Content = {
   // driven from the current date by the consumer, not hard-coded here.
   schedule: [
     {
-      d: "MON 18",
-      body: "garage opens · launch",
-      href: "", // TODO: event link
+      d: "MON 1",
+      body: "cycle 03 opens",
+      href: "",
     },
     {
-      d: "TUE 19",
+      d: "TUE 2",
       body: "workshop · 18:00 CET",
-      href: "https://luma.com/pwz9bs20",
+      href: "https://luma.com/1p0zmid1",
     },
     {
-      d: "FRI 22",
-      body: "builder q&a",
-      href: "", // TODO: event link
+      d: "FRI 5",
+      body: "office hours",
+      href: "https://luma.com/5ocjvmzs",
     },
     {
-      d: "SUN 24",
-      body: "cycle 01 snapshot · first prizes",
+      d: "SUN 7",
+      body: "cycle 03 snapshot · prizes",
       href: "", // TODO: event link
     },
     {
@@ -321,29 +332,58 @@ export const content: Content = {
     },
   ],
 
-  // ── leaderboard rows ───────────────────────────────────────────
-  leaderboard: [
-    { rank: 1, project: "CRC Boosts", url: "https://crc-boost-market.vercel.app", score: 100 },
-    { rank: 2, project: "THP for Good", url: "https://thp.gnosis.box", score: 90 },
-    { rank: 3, project: "Circles Markets", url: "https://circles-markets.netlify.app/", score: 80 },
-    { rank: 4, project: "Circles Chat", url: "https://app.circles-chat.org", score: 60 },
-    { rank: 5, project: "Mutual Aid Map", url: "https://mutual-aid-map.vercel.app", score: 60 },
-    { rank: 6, project: "Card Circles", url: "https://cards-maxnormal.vercel.app/", score: 60 },
-    { rank: 7, project: "SplitCircles", url: "https://splitcircles.vercel.app/", score: 50 },
-    { rank: 8, project: "All Together", url: "https://all-together-gamma.vercel.app", score: 50 },
-    { rank: 9, project: "Hunch", url: "https://hunch-teleshops-projects.vercel.app", score: 50 },
-    { rank: 10, project: "Yield", url: "https://yield-gnosis-mini-app.vercel.app/", score: 50 },
-    { rank: 11, project: "Nft Viewer", url: "https://nft-viewer-ten.vercel.app/", score: 50 },
-    { rank: 12, project: "ChessBuddy", url: "https://chessbuddy-ivory.vercel.app", score: 50 },
-    { rank: 13, project: "Circles Splitter", url: "https://crc-split.vercel.app/", score: 50 },
-    { rank: 14, project: "money-library", url: "https://github.com/Means-Of-Production/money-library", score: 20 },
-    { rank: 15, project: "Balaio", url: "https://www.usebalaio.com/", score: 20 },
-    { rank: 16, project: "DreamCircle Agents", url: "https://dreamnet.ink/dreamcircle-agents", score: 20 },
-    { rank: 17, project: "HistoryGuessr", url: "https://history-guessr.vercel.app/", score: 20 },
-    { rank: 18, project: "organic", url: "https://organic-network.vercel.app/", score: 20 },
-    { rank: 19, project: "Vendyz", url: "https://vendyz.vercel.app/", score: 20 },
-    { rank: 20, project: "chai", url: "https://app.chai.sh/", score: 20 },
-    { rank: 21, project: "Neynart", url: "https://farcaster.xyz/miniapps/A2SFoJHW7Y9B/neynart", score: 20 },
+  // ── leaderboard rows · per cycle ────────────────────────────────
+  // Each entry is one weekly snapshot. The "this week" view shows the
+  // latest cycle here; the "all time" view sums scores across all cycles
+  // (matched by project URL). Add a new `{ cycle, rows }` block each week.
+  cycles: [
+    {
+      cycle: 1,
+      rows: [
+        { rank: 1, project: "CRC Boosts", url: "https://crc-boost-market.vercel.app", score: 100 },
+        { rank: 2, project: "THP for Good", url: "https://thp.gnosis.box", score: 90 },
+        { rank: 3, project: "Circles Markets", url: "https://circles-markets.netlify.app/", score: 80 },
+        { rank: 4, project: "Circles Chat", url: "https://app.circles-chat.org", score: 60 },
+        { rank: 5, project: "Mutual Aid Map", url: "https://mutual-aid-map.vercel.app", score: 60 },
+        { rank: 6, project: "Card Circles", url: "https://cards-maxnormal.vercel.app/", score: 60 },
+        { rank: 7, project: "SplitCircles", url: "https://splitcircles.vercel.app/", score: 50 },
+        { rank: 8, project: "All Together", url: "https://all-together-gamma.vercel.app", score: 50 },
+        { rank: 9, project: "Hunch", url: "https://hunch-teleshops-projects.vercel.app", score: 50 },
+        { rank: 10, project: "Yield", url: "https://yield-gnosis-mini-app.vercel.app/", score: 50 },
+        { rank: 11, project: "Nft Viewer", url: "https://nft-viewer-ten.vercel.app/", score: 50 },
+        { rank: 12, project: "ChessBuddy", url: "https://chessbuddy-ivory.vercel.app", score: 50 },
+        { rank: 13, project: "Circles Splitter", url: "https://crc-split.vercel.app/", score: 50 },
+        { rank: 14, project: "money-library", url: "https://github.com/Means-Of-Production/money-library", score: 20 },
+        { rank: 15, project: "Balaio", url: "https://www.usebalaio.com/", score: 20 },
+        { rank: 16, project: "DreamCircle Agents", url: "https://dreamnet.ink/dreamcircle-agents", score: 20 },
+        { rank: 17, project: "HistoryGuessr", url: "https://history-guessr.vercel.app/", score: 20 },
+        { rank: 18, project: "organic", url: "https://organic-network.vercel.app/", score: 20 },
+        { rank: 19, project: "Vendyz", url: "https://vendyz.vercel.app/", score: 20 },
+        { rank: 20, project: "chai", url: "https://app.chai.sh/", score: 20 },
+        { rank: 21, project: "Neynart", url: "https://farcaster.xyz/miniapps/A2SFoJHW7Y9B/neynart", score: 20 },
+      ],
+    },
+    {
+      cycle: 2,
+      rows: [
+        { rank: 1, project: "Yield", url: "https://yield-gnosis-mini-app.vercel.app/", score: 100 },
+        { rank: 2, project: "The Kitty", url: "https://thekitty.gnosis.box", score: 90 },
+        { rank: 3, project: "HatchLife", url: "https://hatchlife.vercel.app/", score: 80 },
+        { rank: 4, project: "Shorts", url: "https://circles-shorts.pages.dev/", score: 60 },
+        { rank: 5, project: "Trust Cleaner", url: "https://trust-cleaner.vercel.app", score: 60 },
+        { rank: 6, project: "hootpot", url: "https://hootpot.vercel.app", score: 60 },
+        { rank: 7, project: "Word Circles", url: "https://word-circles.vercel.app/", score: 60 },
+        { rank: 8, project: "Dollar Auction", url: "https://koeppelmann.github.io/CirclesTools/dollarAuction/miniapp.html", score: 60 },
+        { rank: 9, project: "BLESS", url: "https://bless-crc.vercel.app/", score: 50 },
+        { rank: 10, project: "Circles 4 UBI", url: "https://circles4ubi-distribution.replit.app/", score: 50 },
+        { rank: 11, project: "echo", url: "https://1echo.netlify.app", score: 20 },
+        { rank: 12, project: "HistoryGuessr", url: "https://history-guessr.vercel.app/", score: 20 },
+        { rank: 13, project: "circles-chat", url: "https://app.circles-chat.org/?p1a", score: 20 },
+        { rank: 14, project: "Snake Xenzia", url: "https://snake-xenzia-nh32.vercel.app", score: 20 },
+        { rank: 15, project: "Hunch", url: "https://hunch-teleshops-projects.vercel.app", score: 20 },
+        { rank: 16, project: "SplitCircles", url: "https://splitcircles.vercel.app/", score: 20 },
+      ],
+    },
   ],
 
   // ── leaderboard secondary panels ───────────────────────────────

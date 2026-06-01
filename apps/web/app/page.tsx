@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
 import { getCycleInfo } from "@/lib/cycle";
+import { getLatestCycle } from "@/lib/leaderboard";
 import { createClient } from "@/lib/supabase/server";
 import { AgentPaste } from "@/components/agent-paste";
 import { IntroVideoModal } from "@/components/intro-video-modal";
@@ -59,7 +60,14 @@ export default async function LandingPage() {
   const L = content.landing;
   const cycleInfo = getCycleInfo();
   const cycle = cycleInfo.cycleLabel;
-  const lbCount = content.leaderboard.length;
+  // Home shows the most recent completed cycle's leaderboard (the last
+  // snapshot), which can lag the live program cycle in the status bar.
+  const latestCycle = getLatestCycle();
+  const latestRows = latestCycle?.rows ?? [];
+  const latestCycleLabel = latestCycle
+    ? String(latestCycle.cycle).padStart(2, "0")
+    : cycle;
+  const lbCount = latestRows.length;
   const supabase = await createClient();
   const [live, authResult, introThumbnail] = await Promise.all([
     fetchLiveCounters(supabase),
@@ -246,7 +254,7 @@ export default async function LandingPage() {
           </Pane>
 
           <Pane
-            title={`leaderboard · cycle ${cycle}`}
+            title={`leaderboard · cycle ${latestCycleLabel}`}
             hint={
               lbCount > 0
                 ? `top 5 of ${lbCount}`
@@ -281,7 +289,7 @@ export default async function LandingPage() {
                   <Table
                     head={["#", "project", "score"]}
                     sizes={[{ w: 28 }, {}, { right: true, w: 64 }]}
-                    rows={content.leaderboard.slice(0, 5).map((r) => ({
+                    rows={latestRows.slice(0, 5).map((r) => ({
                       cells: [
                         {
                           v: String(r.rank).padStart(2, "0"),

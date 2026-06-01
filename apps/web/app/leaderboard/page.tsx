@@ -1,9 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
 import { getCycleInfo, TOTAL_CYCLES } from "@/lib/cycle";
+import { getAllTimeRows, getLatestCycle } from "@/lib/leaderboard";
 import { createClient } from "@/lib/supabase/server";
 import { LiveCountdown } from "@/components/live-countdown";
-import { Btn, Grid, Page, Pane, S, SDot, Table } from "@workspace/ui/kit";
+import { Btn, Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
+import { LeaderboardTable } from "./leaderboard-table-client";
 
 export const revalidate = 60;
 
@@ -49,8 +51,13 @@ export default async function LeaderboardPage() {
   const stats = await fetchProgramStats(supabase);
   const currentCycle = cycleInfo.cycle;
   const cycle = cycleInfo.cycleLabel;
-  const rows = content.leaderboard;
-  const empty = rows.length === 0;
+  const latest = getLatestCycle();
+  const weekRows = latest?.rows ?? [];
+  const allTimeRows = getAllTimeRows();
+  const latestCycleLabel = latest
+    ? String(latest.cycle).padStart(2, "0")
+    : cycle;
+  const empty = weekRows.length === 0;
   const now = new Date();
   const programOpen = now.getTime() >= cycleInfo.startedAtMs;
   const startsAtLabel = new Intl.DateTimeFormat("en-US", {
@@ -99,7 +106,7 @@ export default async function LeaderboardPage() {
                 ? programOpen
                   ? `cycle ${cycle} · live`
                   : `cycle ${cycle} opens ${startsAtLabel}`
-                : `rank by ↓ judges' score · ${rows.length} projects`
+                : "rank by ↓ judges' score"
             }
           >
           {empty ? (
@@ -120,48 +127,11 @@ export default async function LeaderboardPage() {
               </div>
             </div>
           ) : (
-            <>
-              {/* filter strip */}
-              <div className="mb-3 flex gap-[22px] border-b border-ink pb-2.5 font-mono text-[11px] text-faint">
-                <span className="-mb-[11px] border-b-2 border-ink pb-2.5 font-bold text-ink">
-                  this week
-                </span>
-                <span>all time</span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <Table
-                  head={["#", "project", "score"]}
-                  sizes={[{ w: 30 }, {}, { right: true, w: 80 }]}
-                  rows={rows.map((r) => ({
-                    cells: [
-                      {
-                        v: String(r.rank).padStart(2, "0"),
-                        muted: true,
-                      },
-                      {
-                        v: (
-                          <a
-                            href={r.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="border-b border-ink text-ink hover:bg-ghost"
-                          >
-                            {r.project}
-                          </a>
-                        ),
-                        bold: true,
-                      },
-                      { v: r.score, bold: true },
-                    ],
-                  }))}
-                />
-              </div>
-
-              <div className="mt-3.5 flex justify-between font-mono text-[11px] text-faint">
-                <span>↳ {rows.length} projects</span>
-              </div>
-            </>
+            <LeaderboardTable
+              weekRows={weekRows}
+              allTimeRows={allTimeRows}
+              weekLabel={`cycle ${latestCycleLabel}`}
+            />
           )}
           </Pane>
         </div>
@@ -171,8 +141,8 @@ export default async function LeaderboardPage() {
           className="grid min-h-0 gap-3"
           style={{ gridTemplateRows: "auto auto auto 1fr" }}
         >
-          <Pane title="podium · this week" hint="winners">
-            {rows.length === 0 ? (
+          <Pane title={`podium · cycle ${latestCycleLabel}`} hint="winners">
+            {weekRows.length === 0 ? (
               <div className="font-mono text-[11px] text-faint">
                 no winners yet — first snapshot in{" "}
                 <LiveCountdown targetMs={cycleInfo.endsAtMs} />.
@@ -185,7 +155,7 @@ export default async function LeaderboardPage() {
                   gap: "8px 12px",
                 }}
               >
-                {rows.slice(0, 3).map((r) => (
+                {weekRows.slice(0, 3).map((r) => (
                   <div key={r.rank} className="contents">
                     <span
                       className={

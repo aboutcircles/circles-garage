@@ -238,6 +238,11 @@ export const content: Content = {
         href: "https://vimeo.com/1193867453?share=copy&fl=sv&fe=ci",
       },
       {
+        text: "workshop 02 · invitation & referrals",
+        hrefLabel: "watch recording",
+        href: "https://vimeo.com/1197962587?share=copy&fl=sv&fe=ci",
+      },
+      {
         text: "build with AI · skill.md",
         hrefLabel: "skill.md",
         href: "https://garage.aboutcircles.com/SKILL.md",
@@ -255,7 +260,7 @@ export const content: Content = {
       {
         text: "office hours · every friday · rsvp on luma",
         hrefLabel: "rsvp on luma",
-        href: "https://luma.com/5ocjvmzs",
+        href: "https://luma.com/mnc6heva",
       },
       {
         text: "stuck? reach the team",
@@ -282,7 +287,7 @@ export const content: Content = {
     {
       d: "FRI 5",
       body: "office hours",
-      href: "https://luma.com/5ocjvmzs",
+      href: "https://luma.com/mnc6heva",
     },
     {
       d: "SUN 7",

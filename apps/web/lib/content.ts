@@ -39,6 +39,9 @@ export type BulletinItem = {
   text: string;
   href?: string;
   hrefLabel?: string; // optional separate label for the link portion
+  /** Trailing links rendered after `text`, each " · "-separated. Used for
+   *  rows that need more than one link (e.g. a workshop's recording + slides). */
+  links?: readonly { label: string; href: string }[];
 };
 
 export type LandingAgent = {
@@ -233,14 +236,24 @@ export const content: Content = {
     ],
     bulletin: [
       {
-        text: "workshop 01 · watch recording",
-        hrefLabel: "watch recording",
-        href: "https://vimeo.com/1193867453?share=copy&fl=sv&fe=ci",
+        text: "workshop 01 · kickoff",
+        links: [
+          {
+            label: "watch recording",
+            href: "https://vimeo.com/1193867453?share=copy&fl=sv&fe=ci",
+          },
+          { label: "slides (pdf)", href: "/circles-kickoff-workshop-may19.pdf" },
+        ],
       },
       {
         text: "workshop 02 · invitation & referrals",
-        hrefLabel: "watch recording",
-        href: "https://vimeo.com/1197962587?share=copy&fl=sv&fe=ci",
+        links: [
+          {
+            label: "watch recording",
+            href: "https://vimeo.com/1197962587?share=copy&fl=sv&fe=ci",
+          },
+          { label: "slides (pdf)", href: "/2026-06-02-referral-signup.pdf" },
+        ],
       },
       {
         text: "build with AI · skill.md",

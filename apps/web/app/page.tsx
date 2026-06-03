@@ -404,6 +404,26 @@ export default async function LandingPage() {
           <Pane title="bulletin" hint="from the team">
             <div className="font-mono text-xs leading-[1.7]">
               {L.bulletin.map((b, i) => {
+                if (b.links && b.links.length) {
+                  return (
+                    <div key={i}>
+                      · {b.text}
+                      {b.links.map((l, j) => (
+                        <span key={j}>
+                          {" · "}
+                          <a
+                            href={l.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="border-b border-ink text-ink hover:bg-ghost"
+                          >
+                            {l.label}
+                          </a>
+                        </span>
+                      ))}
+                    </div>
+                  );
+                }
                 if (!b.href) {
                   return (
                     <div key={i}>

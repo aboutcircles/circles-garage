@@ -403,6 +403,20 @@ export const content: Content = {
         { rank: 16, project: "SplitCircles", url: "https://splitcircles.vercel.app/", score: 20 },
       ],
     },
+    {
+      cycle: 3,
+      rows: [
+        { rank: 1, project: "Circles Commons", url: "https://circles-commons.vercel.app", score: 100 },
+        { rank: 2, project: "Word Circles", url: "https://word-circles.vercel.app/", score: 90 },
+        { rank: 3, project: "FuseCoop", url: "https://fuse-coop.vercel.app/", score: 80 },
+        { rank: 4, project: "Coopera", url: "https://coopera-crc.vercel.app", score: 60 },
+        { rank: 5, project: "Circles 4 UBI", url: "https://circles4ubi-distribution.replit.app/", score: 50 },
+        { rank: 6, project: "The Kitty", url: "https://thekitty.gnosis.box", score: 50 },
+        { rank: 7, project: "Circlo", url: "https://circlo-iota.vercel.app", score: 20 },
+        { rank: 8, project: "TrustBook", url: "https://trust-book-tau.vercel.app/", score: 20 },
+        { rank: 9, project: "Six Degrees of Circles", url: "https://six-degrees-pkg.vercel.app/", score: 20 },
+      ],
+    },
   ],
 
   // ── leaderboard secondary panels ───────────────────────────────

@@ -15,6 +15,8 @@ Six-week builder program. Each week has a Sunday deadline; the top three entries
 
 Mini-apps come in two shapes: **embedded** (runs inside the Circles host, which provides the user's address via `@aboutcircles/miniapp-sdk`) and **standalone** (regular web app, signed actions go through a Gnosis App deep-link QR). Pick the shape that fits the idea before scaffolding — see https://docs.aboutcircles.com/miniapps/what-are-circles-mini-apps.md.
 
+Embedded mini-apps don't need to assume the user already has a Circles account. The miniapp SDK can create or connect one from inside the app: `requestCreateAccount()` hands off to the host's sign-up/login flow (the host handles passkey auth and Safe setup), and `onWalletChange()` is the source of truth for the resulting authentication state. Use `isMiniappMode()` to show the sign-up entry point only when running inside the host. Full guide: https://docs.aboutcircles.com/miniapps/create-or-connect-a-circles-account-from-a-mini-app.md.
+
 Start from the official template:
 
 ```

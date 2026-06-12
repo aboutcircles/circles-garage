@@ -256,6 +256,12 @@ export const content: Content = {
         ],
       },
       {
+        text: "workshop 03 · office hours",
+        links: [
+          { label: "slides (pdf)", href: "/2026-06-12-office-hours.pdf" },
+        ],
+      },
+      {
         text: "build with AI · skill.md",
         hrefLabel: "skill.md",
         href: "https://garage.aboutcircles.com/SKILL.md",

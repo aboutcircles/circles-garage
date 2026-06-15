@@ -60,6 +60,28 @@ export type LandingCopy = {
   bulletin: readonly BulletinItem[];
 };
 
+// ── copy: dappcon landing ──────────────────────────────────────────
+export type DappconStep = readonly [string, string, string]; // num, title, body
+export type DappconLink = { label: string; href: string; hint?: string };
+export type DappconEvent = {
+  name: string;
+  dates: string;
+  venue: string;
+  host: string;
+};
+export type DappconCopy = {
+  kicker: string;
+  headline: readonly [string, string];
+  sub: string;
+  event: DappconEvent;
+  ctaPrimary: string;
+  ctaSecondary: string;
+  steps: readonly DappconStep[];
+  why: readonly string[];
+  agentPrompt: string;
+  links: readonly DappconLink[];
+};
+
 // ── copy: schedule ─────────────────────────────────────────────────
 export type ScheduleEntry = {
   d: string;
@@ -162,6 +184,7 @@ export type Content = {
   program: Program;
   counters: readonly Counter[];
   landing: LandingCopy;
+  dappcon: DappconCopy;
   schedule: readonly ScheduleEntry[];
   judging: readonly JudgingCriterion[];
   cycles: readonly CycleResult[];
@@ -285,6 +308,69 @@ export const content: Content = {
         text: "stuck? reach the team",
         hrefLabel: "→ telegram",
         href: "https://t.me/about_circles/499",
+      },
+    ],
+  },
+
+  // ── copy: dappcon landing ──────────────────────────────────────
+  dappcon: {
+    kicker:
+      "// circles/garage · live at dappcon berlin · jun 16–17 · hosted by gnosis",
+    headline: ["Ship a Circles mini-app", "this week at DappCon."],
+    sub: "Circles is people-issued money on Gnosis. Build a mini-app, ship it to a public URL, submit it here. Top 3 builders split $500 in CRC every week. No decks.",
+    event: {
+      name: "DappCon 2026",
+      dates: "Jun 16–17",
+      venue: "Radialsystem · Berlin",
+      host: "Gnosis",
+    },
+    ctaPrimary: "sign up with github →",
+    ctaSecondary: "submit a mini-app →",
+    steps: [
+      ["i.", "sign up", "github + a circles profile address. ~2 min."],
+      [
+        "ii.",
+        "build a mini-app",
+        "scaffold from the official template, or paste the agent prompt below.",
+      ],
+      [
+        "iii.",
+        "submit & get judged",
+        "drop your live url on /register. snapshot sunday 23:59 CET, paid in CRC monday.",
+      ],
+    ],
+    why: [
+      "Circles is money issued by people, not banks. Mini-apps are how it becomes a daily habit instead of a thesis.",
+      "We pay builders for what shipped — judged on the working app, not on a pitch deck.",
+    ],
+    agentPrompt:
+      "Read https://garage.aboutcircles.com/SKILL.md and help me ship a circles mini-app",
+    links: [
+      {
+        label: "builder telegram",
+        href: "https://t.me/about_circles/499",
+        hint: "ask the team · live this week",
+      },
+      {
+        label: "mini-app docs",
+        href: "https://docs.aboutcircles.com/miniapps",
+        hint: "how circles mini-apps work",
+      },
+      {
+        label: "skill.md",
+        href: "https://garage.aboutcircles.com/SKILL.md",
+        hint: "feed this to your agent",
+      },
+      {
+        label: "official template",
+        href: "https://github.com/aboutcircles/embedded-miniapp-boilerplate",
+        hint: "scaffold in one clone",
+      },
+      { label: "rules & judging", href: "/rules", hint: "how we score" },
+      {
+        label: "leaderboard",
+        href: "/leaderboard",
+        hint: "see who's shipping",
       },
     ],
   },

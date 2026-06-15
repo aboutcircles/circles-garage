@@ -11,8 +11,8 @@ type CmdBarProps = {
  */
 export function CmdBar({ breadcrumb, cmd }: CmdBarProps) {
   return (
-    <footer className="flex items-center justify-between gap-3 border-t border-hair px-4 py-2 font-mono text-[11px] text-faint">
-      <span>
+    <footer className="flex items-center justify-between gap-3 border-t border-hair px-3 py-1.5 font-mono text-[10px] text-faint sm:px-4 sm:py-2 sm:text-[11px]">
+      <span className="truncate">
         {breadcrumb ?? (
           <>
             <span className="text-ink">:</span>{" "}

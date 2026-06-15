@@ -1,7 +1,7 @@
 import { content } from "@/lib/content";
 import { AgentPaste } from "@/components/agent-paste";
 import { SignInWithGitHub } from "@/components/sign-in-with-github";
-import { Btn, Hero, Page, Pane, S, SDot } from "@workspace/ui/kit";
+import { Btn, Page, Pane } from "@workspace/ui/kit";
 
 export default function DappconPage() {
   const D = content.dappcon;
@@ -27,47 +27,66 @@ export default function DappconPage() {
     ["3rd", `${p.prizes.third} ${p.prizes.currency}`],
   ];
 
+  const heroFacts: ReadonlyArray<readonly [string, string]> = [
+    [D.event.dates, D.event.venue],
+    [p.pool, "weekly pool"],
+    ["top 3", "paid in CRC"],
+  ];
+
   return (
     <Page
       screen="07 DappCon"
       scroll
       status={
-        <>
-          <S k="event" v={D.event.name} accent />
-          <SDot />
-          <S k="pool" v={p.pool} accent />
-          <SDot />
-          <span>
-            <span className="text-ember mr-1">●</span>live
-          </span>
-        </>
+        <span className="font-bold">
+          DappCon · {p.pool} · <span className="text-ember">●</span> live
+        </span>
       }
       breadcrumb="welcome / dappcon"
     >
-      <div className="mx-auto flex max-w-[680px] flex-col gap-3">
+      <div className="mx-auto flex max-w-[760px] flex-col gap-3">
         {/* 1 hero */}
-        <Pane title="circles/garage · dappcon berlin" hint="dappcon.txt">
-          <Hero
-            kicker={D.kicker}
-            size="lg"
-            sub={D.sub}
-            ctas={
-              <>
-                <SignInWithGitHub
-                  next="/signup"
-                  label={D.ctaPrimary}
-                  ember
-                />
-                <Btn href="/register">{D.ctaSecondary}</Btn>
-                <Btn ghost href="/leaderboard">
-                  see who&apos;s shipping
-                </Btn>
-              </>
-            }
-          >
-            {D.headline.join(" ")}
-          </Hero>
-        </Pane>
+        <section className="overflow-hidden border-2 border-ink bg-ink text-paper">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-paper/15 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.08em]">
+            <span>circles/garage · dappcon berlin</span>
+            <span className="text-paper/60">ship this week</span>
+          </div>
+          <div className="p-4 sm:p-5">
+            <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[12px] text-paper/60">
+              <span>
+                <span className="text-ember">●</span> live at {D.event.name}
+              </span>
+              <span>{D.event.dates}</span>
+              <span>{D.event.venue}</span>
+            </div>
+            <h1 className="max-w-[650px] text-balance font-mono text-[40px] font-bold leading-[0.98] tracking-[-1.1px] text-paper sm:text-5xl md:text-[56px]">
+              {D.headline.join(" ")}
+            </h1>
+            <p className="mt-4 max-w-[620px] font-mono text-[14px] leading-[1.55] text-paper/60 sm:text-[15px]">
+              {D.sub}
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <SignInWithGitHub next="/signup" label={D.ctaPrimary} ember />
+              <Btn
+                href="/register"
+                className="border-paper text-paper hover:bg-paper hover:text-ink"
+              >
+                {D.ctaSecondary}
+              </Btn>
+              <Btn ghost href="/leaderboard" className="text-paper">
+                see who&apos;s shipping
+              </Btn>
+            </div>
+            <div className="mt-5 grid gap-3 border-t border-paper/15 pt-4 font-mono text-[12px] sm:grid-cols-3">
+              {heroFacts.map(([value, label]) => (
+                <div key={`${value}-${label}`} className="min-w-0">
+                  <div className="font-bold text-paper">{value}</div>
+                  <div className="mt-0.5 text-paper/50">{label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* 2 event + prize strip */}
         <Pane title="the event" hint="jun 16–17 · radialsystem">

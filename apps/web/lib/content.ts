@@ -509,6 +509,20 @@ export const content: Content = {
         { rank: 9, project: "Six Degrees of Circles", url: "https://six-degrees-pkg.vercel.app/", score: 20 },
       ],
     },
+    {
+      cycle: 4,
+      rows: [
+        { rank: 1, project: "Circlo", url: "https://circlo-iota.vercel.app", score: 100 },
+        { rank: 2, project: "Chaichat", url: "https://chaichat.attps.workers.dev/", score: 90 },
+        { rank: 3, project: "Beer Kitty", url: "https://beer-kitty.vercel.app", score: 80 },
+        { rank: 4, project: "Yield", url: "https://yield-gnosis-mini-app.vercel.app/", score: 50 },
+        { rank: 5, project: "Jukebox", url: "https://jukebox-joy.replit.app/", score: 40 },
+        { rank: 6, project: "CRC Quiz Duel", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fcrc-quiz-duel-mjo5.vercel.app%2F", score: 40 },
+        { rank: 7, project: "Bless", url: "https://bless-crc.vercel.app", score: 30 },
+        { rank: 8, project: "Circles Bazaar", url: "https://apps.chatforest.com/bazaar/", score: 20 },
+        { rank: 9, project: "The Kitty", url: "https://thekitty.gnosis.box", score: 20 },
+      ],
+    },
   ],
 
   // ── leaderboard secondary panels ───────────────────────────────

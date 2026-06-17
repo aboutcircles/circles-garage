@@ -376,27 +376,27 @@ export const content: Content = {
   },
 
   // ── copy: schedule ─────────────────────────────────────────────
-  // Launch week's events + the pinned grand finale. The "now" flag is
+  // This week's events + the pinned grand finale. The "now" flag is
   // driven from the current date by the consumer, not hard-coded here.
   schedule: [
     {
-      d: "MON 1",
-      body: "cycle 03 opens",
+      d: "MON 15",
+      body: "cycle 05 opens",
       href: "",
     },
     {
-      d: "TUE 2",
-      body: "workshop · 18:00 CET",
-      href: "https://luma.com/1p0zmid1",
+      d: "TUE 16",
+      body: "live workshop · Berlin",
+      href: "", // TODO: DappCon Berlin event link
     },
     {
-      d: "FRI 5",
-      body: "office hours",
-      href: "https://luma.com/mnc6heva",
+      d: "WED 17",
+      body: "live workshop · Berlin",
+      href: "", // TODO: DappCon Berlin event link
     },
     {
-      d: "SUN 7",
-      body: "cycle 03 snapshot · prizes mon",
+      d: "SUN 21",
+      body: "cycle 05 snapshot · prizes mon",
       href: "", // TODO: event link
     },
     {

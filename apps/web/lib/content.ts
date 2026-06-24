@@ -259,55 +259,12 @@ export const content: Content = {
     ],
     bulletin: [
       {
-        text: "workshop 01 · kickoff",
-        links: [
-          {
-            label: "watch recording",
-            href: "https://vimeo.com/1193867453?share=copy&fl=sv&fe=ci",
-          },
-          { label: "slides (pdf)", href: "/circles-kickoff-workshop-may19.pdf" },
-        ],
+        text: "cycle 06 ends · sun 28 jun",
       },
       {
-        text: "workshop 02 · invitation & referrals",
-        links: [
-          {
-            label: "watch recording",
-            href: "https://vimeo.com/1197962587?share=copy&fl=sv&fe=ci",
-          },
-          { label: "slides (pdf)", href: "/2026-06-02-referral-signup.pdf" },
-        ],
-      },
-      {
-        text: "workshop 03 · office hours",
-        links: [
-          { label: "slides (pdf)", href: "/2026-06-12-office-hours.pdf" },
-        ],
-      },
-      {
-        text: "build with AI · skill.md",
-        hrefLabel: "skill.md",
-        href: "https://garage.aboutcircles.com/SKILL.md",
-      },
-      {
-        text: "circles mini-app docs",
-        hrefLabel: "docs.aboutcircles.com/miniapps",
-        href: "https://docs.aboutcircles.com/miniapps",
-      },
-      {
-        text: "builder telegram",
-        hrefLabel: "join the group",
-        href: "https://t.me/about_circles/499",
-      },
-      {
-        text: "office hours · every friday · rsvp on luma",
-        hrefLabel: "rsvp on luma",
-        href: "https://luma.com/mnc6heva",
-      },
-      {
-        text: "stuck? reach the team",
-        hrefLabel: "→ telegram",
-        href: "https://t.me/about_circles/499",
+        text: "closing ceremony · mon 29 jun · register on luma",
+        hrefLabel: "register on luma",
+        href: "https://luma.com/6u1orwjd",
       },
     ],
   },

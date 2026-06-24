@@ -484,8 +484,8 @@ export const content: Content = {
       cycle: 5,
       rows: [
         { rank: 1, project: "roebel", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fcircles-inviter.vercel.app%2F", score: 100 },
-        { rank: 2, project: "Tool Circles", url: "https://tool-circles.vercel.app/", score: 80 },
-        { rank: 3, project: "IQlify", url: "https://iqilify-circles.vercel.app/", score: 80 },
+        { rank: 2, project: "IQlify", url: "https://iqilify-circles.vercel.app/", score: 90 },
+        { rank: 3, project: "Tool Circles", url: "https://tool-circles.vercel.app/", score: 80 },
         { rank: 4, project: "Tennis Booking", url: "https://tennis-app-drab-zeta.vercel.app/", score: 60 },
         { rank: 5, project: "chaichat", url: "https://chaichat.attps.workers.dev/", score: 60 },
         { rank: 6, project: "Manna", url: "https://manna-seven-beta.vercel.app/", score: 60 },

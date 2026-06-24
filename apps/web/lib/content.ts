@@ -523,6 +523,20 @@ export const content: Content = {
         { rank: 9, project: "The Kitty", url: "https://thekitty.gnosis.box", score: 20 },
       ],
     },
+    {
+      cycle: 5,
+      rows: [
+        { rank: 1, project: "roebel", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fcircles-inviter.vercel.app%2F", score: 100 },
+        { rank: 2, project: "Tool Circles", url: "https://tool-circles.vercel.app/", score: 80 },
+        { rank: 3, project: "IQlify", url: "https://iqilify-circles.vercel.app/", score: 80 },
+        { rank: 4, project: "Tennis Booking", url: "https://tennis-app-drab-zeta.vercel.app/", score: 60 },
+        { rank: 5, project: "chaichat", url: "https://chaichat.attps.workers.dev/", score: 60 },
+        { rank: 6, project: "Manna", url: "https://manna-seven-beta.vercel.app/", score: 60 },
+        { rank: 7, project: "crchours", url: "https://crchours.vercel.app/", score: 20 },
+        { rank: 8, project: "BlockSquad", url: "http://blocksquad.io/en/gnosis", score: 20 },
+        { rank: 9, project: "Circles 4 UBI", url: "https://circles4ubi-distribution.replit.app/", score: 20 },
+      ],
+    },
   ],
 
   // ── leaderboard secondary panels ───────────────────────────────

@@ -16,6 +16,19 @@ import type { CycleResult, LeaderboardRow } from "./content";
 
 /** Stable identity for a project across cycles, derived from its URL. */
 export function projectKey(url: string): string {
+  // The Circles playground is a viewer wrapper:
+  // `circles.gnosis.io/playground?url=<encoded app url>`. The wrapped app is the
+  // real identity — without unwrapping it, every playground link would collapse
+  // to the same `circles.gnosis.io/playground` key. Recurse on the inner URL.
+  const wrapped = /\/playground\?[^#]*\burl=([^&#]+)/i.exec(url.trim());
+  if (wrapped?.[1]) {
+    try {
+      return projectKey(decodeURIComponent(wrapped[1]));
+    } catch {
+      // malformed encoding — fall through to the plain normalisation below
+    }
+  }
+
   let u = url.trim().toLowerCase();
   u = u.replace(/^https?:\/\//, "");
   u = u.replace(/^www\./, "");

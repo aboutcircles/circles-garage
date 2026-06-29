@@ -494,6 +494,20 @@ export const content: Content = {
         { rank: 9, project: "Circles 4 UBI", url: "https://circles4ubi-distribution.replit.app/", score: 20 },
       ],
     },
+    {
+      cycle: 6,
+      rows: [
+        { rank: 1, project: "golazo", url: "https://golazo-ball.vercel.app", score: 100 },
+        { rank: 2, project: "Wantoff", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fwantoff.vercel.app%2F", score: 90 },
+        { rank: 3, project: "Booking Buddy", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fbooking-buddy-circles.vercel.app%2F", score: 80 },
+        { rank: 4, project: "chaicash", url: "https://chaicash.attps.workers.dev/", score: 50 },
+        { rank: 5, project: "Recipe Circles", url: "https://recipe-circles.vercel.app", score: 50 },
+        { rank: 6, project: "Economic Circle", url: "https://circles.langer.tv/", score: 50 },
+        { rank: 7, project: "crc-credit", url: "https://crc-credit.vercel.app/", score: 50 },
+        { rank: 8, project: "roebel", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fcircles-inviter.vercel.app%2F", score: 50 },
+        { rank: 9, project: "Pinkie", url: "https://circles.gnosis.io/playground?url=https%3A%2F%2Fpinkie-circles.vercel.app%2F", score: 40 },
+      ],
+    },
   ],
 
   // ── leaderboard secondary panels ───────────────────────────────

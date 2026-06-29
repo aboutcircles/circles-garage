@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { content } from "@/lib/content";
-import { getCycleInfo } from "@/lib/cycle";
+import { getCycleInfo, SUBMISSIONS_OPEN } from "@/lib/cycle";
+import { EventClosed } from "@/components/event-closed";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { UserBadge } from "@/components/user-badge";
@@ -13,6 +14,16 @@ export default async function RegisterPage({
 }: {
   searchParams: Promise<{ from?: string }>;
 }) {
+  // Program's over: no form, no DB queries — just the closed notice.
+  if (!SUBMISSIONS_OPEN) {
+    return (
+      <EventClosed
+        screen="05 Submit mini-app"
+        breadcrumb="dashboard / mini-apps / closed"
+      />
+    );
+  }
+
   const d = content.draft;
   const cycleInfo = getCycleInfo();
   const { from } = await searchParams;

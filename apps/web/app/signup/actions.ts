@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { SUBMISSIONS_OPEN } from "@/lib/cycle";
 
 export type SignupInput = {
   handle: string;
@@ -12,9 +13,23 @@ export type SignupInput = {
 
 export type SignupResult =
   | { ok: true }
-  | { ok: false; code: "unauthenticated" | "duplicate" | "unknown"; message: string };
+  | {
+      ok: false;
+      code: "closed" | "unauthenticated" | "duplicate" | "unknown";
+      message: string;
+    };
 
 export async function createBuilder(input: SignupInput): Promise<SignupResult> {
+  // Intake is closed once the program ends — fail before any DB write.
+  if (!SUBMISSIONS_OPEN) {
+    return {
+      ok: false,
+      code: "closed",
+      message:
+        "signups are closed — circles/garage has wrapped. see the final results on the leaderboard.",
+    };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

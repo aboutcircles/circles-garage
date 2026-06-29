@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
-import { getCycleInfo } from "@/lib/cycle";
+import { getCycleInfo, SUBMISSIONS_OPEN } from "@/lib/cycle";
 import { getLatestCycle } from "@/lib/leaderboard";
 import { createClient } from "@/lib/supabase/server";
 import { AgentPaste } from "@/components/agent-paste";
@@ -156,7 +156,9 @@ export default async function LandingPage() {
                   <Btn ember href="/dashboard">
                     → dashboard
                   </Btn>
-                  <Btn href="/register">{L.ctaSecondary}</Btn>
+                  {SUBMISSIONS_OPEN && (
+                    <Btn href="/register">{L.ctaSecondary}</Btn>
+                  )}
                   <Btn ghost href="/leaderboard">
                     see leaderboard
                   </Btn>
@@ -168,7 +170,9 @@ export default async function LandingPage() {
                     label="sign in with github →"
                     ember
                   />
-                  <Btn href="/register">{L.ctaSecondary}</Btn>
+                  {SUBMISSIONS_OPEN && (
+                    <Btn href="/register">{L.ctaSecondary}</Btn>
+                  )}
                   <Btn ghost href="/leaderboard">
                     see leaderboard
                   </Btn>

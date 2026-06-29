@@ -179,6 +179,16 @@ export type Draft = {
   notes: string;
 };
 
+// ── event-closed notice ────────────────────────────────────────────
+// Shown on /register and /signup — and as the relabeled CTA target across
+// the site — once `SUBMISSIONS_OPEN` (lib/cycle.ts) is false.
+export type ClosedNotice = {
+  head: string;
+  body: string;
+  cta: string;
+  ctaHref: string;
+};
+
 // ── root export ────────────────────────────────────────────────────
 export type Content = {
   program: Program;
@@ -191,6 +201,7 @@ export type Content = {
   movers: readonly Mover[];
   signup: SignupForm;
   draft: Draft;
+  closed: ClosedNotice;
 };
 
 export const content: Content = {
@@ -591,5 +602,14 @@ export const content: Content = {
     repo: "github.com/manyfold/pocket-mint",
     notes:
       "open the link, connect a Gnosis wallet with any CRC balance, tap 'mint' on the home page. mobile only — demo video: https://twitter.com/manyfold/status/...",
+  },
+
+  // ── event-closed notice ─────────────────────────────────────────
+  // Surfaced once `SUBMISSIONS_OPEN` is false (lib/cycle.ts).
+  closed: {
+    head: "that's a wrap — thank you",
+    body: "circles/garage has finished its 6-week run, and submissions and signups are now closed. huge thanks to every builder who shipped a mini-app this season — the final standings are up on the leaderboard.",
+    cta: "view results →",
+    ctaHref: "/leaderboard",
   },
 };

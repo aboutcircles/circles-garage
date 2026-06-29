@@ -1,12 +1,22 @@
 import { redirect } from "next/navigation";
 import { content } from "@/lib/content";
+import { SUBMISSIONS_OPEN } from "@/lib/cycle";
 import { Grid, Page, Pane, S, SDot } from "@workspace/ui/kit";
 import { createClient } from "@/lib/supabase/server";
+import { EventClosed } from "@/components/event-closed";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { UserBadge } from "@/components/user-badge";
 import { SignupClient } from "./signup-client";
 
 export default async function SignupPage() {
+  // Intake closed once the program ends — show the closed notice instead
+  // of the signup form.
+  if (!SUBMISSIONS_OPEN) {
+    return (
+      <EventClosed screen="02 Sign up" breadcrumb="welcome / signup / closed" />
+    );
+  }
+
   const F = content.signup;
   const requiredCount = F.sections.reduce(
     (acc, s) => acc + s.fields.filter((f) => f.required).length,

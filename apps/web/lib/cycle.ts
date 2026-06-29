@@ -24,6 +24,15 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const TOTAL_CYCLES = 6;
 
+// Hard kill switch for builder intake. When `false`, both the mini-app
+// submission flow (/register) and builder signup (/signup) are closed: the
+// server actions refuse to write and the forms are replaced with a "that's
+// a wrap" notice (see `content.closed`). Deliberately independent of the
+// time-based `isOver` below so intake can be closed the moment the program
+// ends, without waiting for the finale timestamp. Flip back to `true` to
+// reopen.
+export const SUBMISSIONS_OPEN = false;
+
 export type CycleInfo = {
   cycle: number;
   totalCycles: number;

@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getCycleInfo } from "@/lib/cycle";
+import { getCycleInfo, SUBMISSIONS_OPEN } from "@/lib/cycle";
 
 export type SubmissionInput = {
   app_name: string;
@@ -20,6 +20,7 @@ export type SubmissionResult =
   | {
       ok: false;
       code:
+        | "closed"
         | "unauthenticated"
         | "no_builder"
         | "missing_changelog"
@@ -30,6 +31,18 @@ export type SubmissionResult =
 export async function createSubmission(
   input: SubmissionInput,
 ): Promise<SubmissionResult> {
+  // Program's over — refuse every write before touching auth or the DB.
+  // This is the real gate; the /register form is also hidden, but a direct
+  // call must not slip a row in.
+  if (!SUBMISSIONS_OPEN) {
+    return {
+      ok: false,
+      code: "closed",
+      message:
+        "submissions are closed — circles/garage has wrapped. see the final results on the leaderboard.",
+    };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

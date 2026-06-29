@@ -1,5 +1,5 @@
 import { content } from "@/lib/content";
-import { getCycleInfo } from "@/lib/cycle";
+import { getCycleInfo, SUBMISSIONS_OPEN } from "@/lib/cycle";
 import { UserBadge } from "@/components/user-badge";
 import {
   Btn,
@@ -257,12 +257,23 @@ export default function RulesPage() {
             </div>
           </Pane>
 
-          <Pane title="next steps" hint="go ship">
+          <Pane
+            title="next steps"
+            hint={SUBMISSIONS_OPEN ? "go ship" : "program ended"}
+          >
             <div className="flex flex-col items-stretch gap-2.5">
-              <Btn primary href="/signup">
-                → sign up
-              </Btn>
-              <Btn href="/register">→ submit a mini-app</Btn>
+              {SUBMISSIONS_OPEN ? (
+                <>
+                  <Btn primary href="/signup">
+                    → sign up
+                  </Btn>
+                  <Btn href="/register">→ submit a mini-app</Btn>
+                </>
+              ) : (
+                <Btn primary href="/leaderboard">
+                  → view results
+                </Btn>
+              )}
               <Btn ghost href="/">
                 ← back to landing
               </Btn>

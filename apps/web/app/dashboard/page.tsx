@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCycleInfo } from "@/lib/cycle";
+import { getCycleInfo, SUBMISSIONS_OPEN } from "@/lib/cycle";
 import { HotkeyEnter } from "@/components/hotkey-enter";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInPrompt } from "@/components/sign-in-prompt";
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
     builder.org_addr ? ` · org: ${builder.org_addr}` : ""
   }`;
 
-  if (isFirstTime) {
+  if (isFirstTime && SUBMISSIONS_OPEN) {
     return (
       <Page
         screen="03 Dashboard"
@@ -181,7 +181,21 @@ export default async function DashboardPage() {
     >
       <Grid cols="1.4fr 1fr" gap={12} fill>
         <Pane title="dashboard" hint={`cycle ${cycleInfo.cycleLabel}`} span={2}>
-          {!hasCurrent && pastSubs.length > 0 ? (
+          {!SUBMISSIONS_OPEN ? (
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <Hero
+                size="md"
+                sub="circles/garage has wrapped — thanks for shipping. the final standings are up on the leaderboard."
+              >
+                hello, @{githubLogin}.
+              </Hero>
+              <div className="flex gap-2">
+                <Btn primary href="/leaderboard">
+                  view results →
+                </Btn>
+              </div>
+            </div>
+          ) : !hasCurrent && pastSubs.length > 0 ? (
             <Hero
               size="md"
               sub={`you have ${pastSubs.length} past submission${pastSubs.length === 1 ? "" : "s"}. resubmit one for this cycle, or start fresh. snapshot fires in ${cycleInfo.countdownLabel}.`}
@@ -320,15 +334,19 @@ function SubmissionRowView({
             </a>
           </>
         )}
-        <span>·</span>
-        {isCurrentCycle ? (
-          <Btn sm href="/register">
-            edit →
-          </Btn>
-        ) : (
-          <Btn sm primary href={`/register?from=${sub.id}`}>
-            resubmit for cycle {currentCycleLabel} →
-          </Btn>
+        {SUBMISSIONS_OPEN && (
+          <>
+            <span>·</span>
+            {isCurrentCycle ? (
+              <Btn sm href="/register">
+                edit →
+              </Btn>
+            ) : (
+              <Btn sm primary href={`/register?from=${sub.id}`}>
+                resubmit for cycle {currentCycleLabel} →
+              </Btn>
+            )}
+          </>
         )}
       </div>
     </div>

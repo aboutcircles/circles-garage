@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { content } from "@/lib/content";
-import { getCycleInfo, TOTAL_CYCLES } from "@/lib/cycle";
+import { getCycleInfo, SUBMISSIONS_OPEN, TOTAL_CYCLES } from "@/lib/cycle";
 import { getAllTimeRows, getLatestCycle } from "@/lib/leaderboard";
 import { createClient } from "@/lib/supabase/server";
 import { LiveCountdown } from "@/components/live-countdown";
@@ -119,12 +119,14 @@ export default async function LeaderboardPage() {
                     : `cycle ${cycle} opens ${startsAtLabel}. first snapshot in `}
                 <LiveCountdown targetMs={cycleInfo.endsAtMs} />.
               </div>
-              <div className="mt-4 flex items-center gap-2.5">
-                <Btn primary href="/signup">
-                  sign up →
-                </Btn>
-                <Btn href="/register">submit a mini-app →</Btn>
-              </div>
+              {SUBMISSIONS_OPEN && (
+                <div className="mt-4 flex items-center gap-2.5">
+                  <Btn primary href="/signup">
+                    sign up →
+                  </Btn>
+                  <Btn href="/register">submit a mini-app →</Btn>
+                </div>
+              )}
             </div>
           ) : (
             <LeaderboardTable

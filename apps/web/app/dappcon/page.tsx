@@ -1,4 +1,5 @@
 import { content } from "@/lib/content";
+import { SUBMISSIONS_OPEN } from "@/lib/cycle";
 import { AgentPaste } from "@/components/agent-paste";
 import { SignInWithGitHub } from "@/components/sign-in-with-github";
 import { Btn, Page, Pane } from "@workspace/ui/kit";
@@ -66,16 +67,29 @@ export default function DappconPage() {
               {D.sub}
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
-              <SignInWithGitHub next="/signup" label={D.ctaPrimary} ember />
-              <Btn
-                href="/register"
-                className="border-paper text-paper hover:bg-paper hover:text-ink"
-              >
-                {D.ctaSecondary}
-              </Btn>
-              <Btn ghost href="/leaderboard" className="text-paper">
-                see who&apos;s shipping
-              </Btn>
+              {SUBMISSIONS_OPEN ? (
+                <>
+                  <SignInWithGitHub next="/signup" label={D.ctaPrimary} ember />
+                  <Btn
+                    href="/register"
+                    className="border-paper text-paper hover:bg-paper hover:text-ink"
+                  >
+                    {D.ctaSecondary}
+                  </Btn>
+                  <Btn ghost href="/leaderboard" className="text-paper">
+                    see who&apos;s shipping
+                  </Btn>
+                </>
+              ) : (
+                <>
+                  <Btn href="/leaderboard" ember>
+                    view final results →
+                  </Btn>
+                  <Btn ghost href="/" className="text-paper">
+                    back to garage
+                  </Btn>
+                </>
+              )}
             </div>
             <div className="mt-5 grid gap-3 border-t border-paper/15 pt-4 font-mono text-[12px] sm:grid-cols-3">
               {heroFacts.map(([value, label]) => (

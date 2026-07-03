@@ -5,6 +5,7 @@ import { getLatestCycle } from "@/lib/leaderboard";
 import { createClient } from "@/lib/supabase/server";
 import { AgentPaste } from "@/components/agent-paste";
 import { IntroVideoModal } from "@/components/intro-video-modal";
+import { LandingFinale } from "@/components/landing-finale";
 import { LiveCountdown } from "@/components/live-countdown";
 import { SignInWithGitHub } from "@/components/sign-in-with-github";
 import { UserBadge } from "@/components/user-badge";
@@ -56,6 +57,18 @@ async function fetchLiveCounters(
 }
 
 export default async function LandingPage() {
+  const supabase = await createClient();
+
+  // Program over: the landing page becomes the public wrap-up screen —
+  // ceremony recording, full all-time standings, program totals.
+  if (!SUBMISSIONS_OPEN) {
+    const [live, authResult] = await Promise.all([
+      fetchLiveCounters(supabase),
+      supabase.auth.getUser(),
+    ]);
+    return <LandingFinale live={live} signedIn={!!authResult.data.user} />;
+  }
+
   const p = content.program;
   const L = content.landing;
   const cycleInfo = getCycleInfo();
@@ -68,7 +81,6 @@ export default async function LandingPage() {
     ? String(latestCycle.cycle).padStart(2, "0")
     : cycle;
   const lbCount = latestRows.length;
-  const supabase = await createClient();
   const [live, authResult, introThumbnail] = await Promise.all([
     fetchLiveCounters(supabase),
     supabase.auth.getUser(),

@@ -189,6 +189,33 @@ export type ClosedNotice = {
   ctaHref: string;
 };
 
+// ── finale (landing wrap state) ────────────────────────────────────
+// The public wrap-up screen `/` renders once `SUBMISSIONS_OPEN`
+// (lib/cycle.ts) is false: event-over notice, closing ceremony recording,
+// full all-time standings and program totals. Visible signed-out.
+export type FinaleStat = {
+  k: string;
+  /** Static fallback — overridden at render where live/derived data exists. */
+  v: string;
+  d: string;
+};
+
+export type FinaleVideo = {
+  title: string;
+  date: string;
+  /** Google Drive `/view` URL — opened directly, not embedded. */
+  url: string;
+};
+
+export type FinaleCopy = {
+  kicker: string;
+  headline: readonly [string, string];
+  sub: string;
+  video: FinaleVideo;
+  stats: readonly FinaleStat[];
+  outro: readonly string[];
+};
+
 // ── root export ────────────────────────────────────────────────────
 export type Content = {
   program: Program;
@@ -202,6 +229,7 @@ export type Content = {
   signup: SignupForm;
   draft: Draft;
   closed: ClosedNotice;
+  finale: FinaleCopy;
 };
 
 export const content: Content = {
@@ -611,5 +639,31 @@ export const content: Content = {
     body: "circles/garage has finished its 6-week run, and submissions and signups are now closed. huge thanks to every builder who shipped a mini-app this season — the final standings are up on the leaderboard.",
     cta: "view results →",
     ctaHref: "/leaderboard",
+  },
+
+  // ── finale (landing wrap state) ─────────────────────────────────
+  // Rendered on `/` once `SUBMISSIONS_OPEN` is false. `builders signed`
+  // and `mini-apps submitted` are overridden with live values when the
+  // stats RPC responds; `projects ranked` is derived from `cycles` above.
+  finale: {
+    kicker:
+      "// circles/garage · 6 cycles · mon 18 may → mon 29 jun 2026 · that's a wrap",
+    headline: ["circles/garage", "is a wrap."],
+    sub: "Six weekly cycles, $3,000 in CRC paid to the builders who shipped. The program is over — the closing ceremony recording and the final standings live here. Thank you for building on Circles.",
+    video: {
+      title: "closing ceremony",
+      date: "mon 29 jun",
+      url: "https://drive.google.com/file/d/1dnm7EvTtiZYOWF3HHHfvYglGqaOkIJ22/view",
+    },
+    stats: [
+      { k: "builders signed", v: "—", d: "over 6 weeks" },
+      { k: "mini-apps submitted", v: "—", d: "across all cycles" },
+      { k: "projects ranked", v: "—", d: "placed on a snapshot" },
+      { k: "prizes paid", v: "$3,000", d: "in CRC · $500 × 6" },
+    ],
+    outro: [
+      "Every cycle, score and project is preserved — the table here is the cumulative all-time board, and the per-cycle snapshots stay up on the leaderboard.",
+      "Circles keeps going. Keep your mini-apps live, keep the wallets moving, and watch the builder telegram for what's next.",
+    ],
   },
 };

@@ -7,6 +7,7 @@ type BtnProps = {
   ghost?: boolean;
   sm?: boolean;
   href?: string;
+  target?: string;
   ember?: boolean;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children">;
 
@@ -28,6 +29,7 @@ export function Btn({
   ember,
   className,
   href,
+  target,
   type = "button",
   ...rest
 }: BtnProps) {
@@ -49,7 +51,12 @@ export function Btn({
 
   if (href) {
     return (
-      <a href={href} className={classes}>
+      <a
+        href={href}
+        target={target}
+        rel={target === "_blank" ? "noreferrer" : undefined}
+        className={classes}
+      >
         {children}
       </a>
     );
